@@ -1,0 +1,22 @@
+<scxml version="1.0" android:version="2" xmlns="http://www.w3.org/2005/07/scxml" xmlns:android="http://com.nosolojava.schemas.android/scxml">
+	<datamodel>
+		<data id="x" expr="-1" />
+		<data id="iterations" expr="-1" />
+		<data id="auxInt" expr="-1" />
+	</datamodel>
+	<state id="idle">
+		<transition event="start" target="incrementingState">
+			<assign location="x" expr="0" />
+			<assign location="iterations" expr="_event.data" />
+		</transition>
+	</state>
+	<state id="incrementingState">
+		<transition cond="x lt iterations" event="incrementEvent">
+			<assign location="auxInt" expr="x" />
+			<assign location="auxInt" expr="auxInt+1" />
+			<assign location="x" expr="auxInt+1" />
+		</transition>
+		<transition event="incrementEvent" target="endState" />
+	</state>
+	<final id="endState" />
+</scxml>

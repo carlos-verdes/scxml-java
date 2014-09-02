@@ -1,0 +1,157 @@
+<scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:a="http://www.nosolojava.com/android.scxml"
+	xmlns:xmpp="http://www.nosolojava.com/xmpp.scxml" version="1.0">
+	<!--
+		
+	-->
+	<datamodel>
+		<data id="user" expr="null" />
+		<data id="gtalkConnInfo"
+			expr="new('com.nosolojava.android.xmpp.bean.ConnectionInfo','talk.google.com',5222,'gmail.com',true)" />
+		<data id="gtalkSession" expr="'gtalkSession'" />
+		<data id="gtalkConn" />
+		<data id="gtalkRoster" expr="new('java.util.HashMap')"/>
+	</datamodel>
+	<!-- idle state -->
+	<parallel id="applicationParallelStates">
+		<!-- view states -->
+		<state id="view-states">
+			<!--  login view states -->
+			<state id="login-view">
+				<transition event="view.loading">
+				</transition>
+				<!-- login offline -->
+				<state id="login-offline">
+					<onentry>
+						<send type="android" event="loginState.offline" />
+					</onentry>
+					<transition event="view.login.init">
+						<send type="android" event="loginState.offline" />
+					</transition>
+					<transition type="internal" event="user.action.login" target="login-connecting">
+						<assign location="user" expr="_event.data" />
+						<send type="scxml" target="#_internal" event="chat.login" />
+					</transition>
+				</state>
+				<!-- login connecting -->
+				<state id="login-connecting">
+					<onentry>
+						<send type="android" event="loginState.connecting" />
+					</onentry>
+					<transition event="view.login.init">
+						<send type="android" event="loginState.connecting" />
+					</transition>
+					<transition type="internal" event="user.action.cancel.login" target="login-offline">
+						<send type="scxml" target="#_internal" event="user.action.cancel.login" />
+					</transition>
+					<transition event="chat.login.ok" target="roster-view" />
+					<transition event="xmpp.logon.ko" target="login-offline">
+						<send type="android" event="logon.ko" />
+					</transition>
+					<transition event="chat.connected">
+						<send type="scxml" target="#_internal" event="chat.login" />
+					</transition>
+				</state>
+			</state>
+			<!--  roster view states -->
+			<state id="roster-view" initial="roster-connected">
+				<onentry>
+				</onentry>
+				<transition event="view.loading">
+				</transition>
+				<!-- roster substate connected -->
+				<state id="roster-connected">
+					<onentry>
+						<send type="android" event="chat.connected" />
+					</onentry>
+					<transition event="view.roster.init">
+						<send type="android" event="chat.connected" />
+						<send type="android" event="chat.roster.updateview">
+							<param name="contacts" expr="new('java.util.ArrayList',gtalkRoster.values())" />
+						</send>
+					</transition>
+						<transition event="xmpp.getRoster.error">
+					</transition>
+					<transition event="chat.roster.viewupdate">
+						<send type="android" event="chat.roster.updateview">
+							<param name="contacts" expr="new java.util.ArrayList(gtalkRoster.values());" />
+						</send>
+					</transition>
+					<transition event="chat.disconnected" target="roster-view-disconnected" type="internal" />
+				</state>
+				<!-- roster substate disconnected -->
+				<state id="roster-disconnected">
+					<onentry>
+						<send type="android" event="chat.disconnected" />
+					</onentry>
+					<transition event="view.roster.init">
+						<send type="android" event="chat.disconnected" />
+					</transition>
+					<transition event="chat.connected" target="roster-view-connected" type="internal" />
+				</state>
+			</state>
+		</state>
+		<!-- chat states -->
+		<state id="chat-states" initial="chat-connecting-state">
+			<onentry>
+			</onentry>
+			<!-- transition to connected state -->
+			<transition type="internal" event="xmpp.conn.connectionCreated xmpp.conn.reconnectionSuccessful" target="chat-connected-state" />
+			
+			<!--  transitions to disconnected -->
+			<transition type="internal" event="xmpp.conn.error xmpp.conn.close.error.* user.action.cancel.login" target="chat-disconnected-state">
+			</transition>
+			<transition type="internal" event="xmpp.conn.cancel" target="chat-disconnected-state">
+			</transition>
+			<!--  transition to check connection -->
+			<transition event="chat.checkConn">
+			</transition>
+			
+			<!-- disconnected state -->
+			<state id="chat-disconnected-state">
+				<onentry>
+					<send type="scxml" target="#_internal" event="chat.disconnected"/>
+				</onentry>
+				<transition event="chat.login" type="internal" target="chat-connecting-state">
+				</transition>
+			</state>
+			<!-- connecting state -->
+			<state id="chat-connecting-state">
+				<onentry>
+				</onentry>
+			</state>
+			<!-- connected state -->
+			<state id="chat-connected-state" initial="chat-connected-iddle">
+				<onentry>
+					<send type="scxml" target="#_internal" event="chat.connected"/>
+				</onentry>
+				<!-- sub states of chat connected  -->
+				<state id="chat-connected-iddle">
+					<transition event="chat.login" target="chat-connected-validatingCredentials" />
+				</state>
+				<state id="chat-connected-validatingCredentials">
+					<onentry>
+					</onentry>
+					<transition event="xmpp.login.ok" target="chat-logged-state" />
+					<transition type="internal" event="xmpp.logon.error" target="chat-disconnected-state">
+						<send type="scxml" target="#_internal" event="chat.login.error" />
+					</transition>
+					<transition event="user.action.cancel.login" target="chat-disconnected-state">
+					</transition>
+				</state>
+				<state id="chat-logged-state">
+					<onentry>
+						<send type="scxml" target="#_internal" event="chat.login.ok" />
+					</onentry>
+					<transition event="chat.roster.change.set">
+						<assign location="gtalkRoster" expr="_event.data" />
+						<send type="scxml" target="#_internal" event="chat.roster.viewupdate" />
+					</transition>
+					<transition event="user.action.cancel.login user.action.logoff" target="chat-disconnected-state">
+					</transition>
+				</state>
+				<transition event="chat.serverStatus.toggle" target="chat-disconnected-state">
+				</transition>
+			</state>
+		</state>
+	</parallel>
+</scxml>

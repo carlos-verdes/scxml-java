@@ -1,0 +1,32 @@
+<scxml name="basicStates" version="1.0" android:version="2" xmlns="http://www.w3.org/2005/07/scxml" xmlns:android="http://com.nosolojava.schemas.android/scxml">
+	<datamodel>
+		<data id="consoleInvokeId" />
+	</datamodel>
+	<state id="on">
+		<invoke idlocation="consoleInvokeId" type="console" />
+		<transition event="exit 0" target="off" />
+		<state id="connected">
+			<onentry>
+				<send type="console" targetexpr="consoleInvokeId">
+					<content>Status connected. \n Press 1 to disconnect, 0 to exit \n</content>
+				</send>
+			</onentry>
+			<transition event="disconnect 1" target="disconnected" />
+		</state>
+		<state id="disconnected">
+			<onentry>
+				<send type="console" targetexpr="consoleInvokeId">
+					<content>Status disconnected. \n Press 1 to connect, 0 to exit \n</content>
+				</send>
+			</onentry>
+			<transition event="connect 1" target="connected" />
+		</state>
+	</state>
+	<final id="off" name="off">
+		<onentry>
+			<send type="console" targetexpr="consoleInvokeId">
+				<content>SM has finish.</content>
+			</send>
+		</onentry>
+	</final>
+</scxml>

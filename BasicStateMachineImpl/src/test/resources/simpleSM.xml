@@ -1,0 +1,23 @@
+<scxml name="basicStates" version="1.0" android:version="2" xmlns="http://www.w3.org/2005/07/scxml" xmlns:android="http://com.nosolojava.schemas.android/scxml">
+	<datamodel>
+		<data id="salute" expr="'hello world'" />
+		<data id="state" expr="'none'" />
+	</datamodel>
+	<initial id="init1">
+		<transition target="connected" />
+	</initial>
+	<state id="connected">
+		<onentry>
+			<assign location="salute" expr="'connected'" />
+		</onentry>
+		<transition event="connect" target="disconnected">
+		</transition>
+	</state>
+	<state id="disconnected">
+		<onentry>
+			<assign location="salute" expr="'disconnected'" />
+		</onentry>
+		<transition event="disconnect" target="connected">
+		</transition>
+	</state>
+</scxml>

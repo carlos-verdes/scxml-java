@@ -1,0 +1,31 @@
+<scxml name="basicStates" version="1.0" android:version="2" xmlns="http://www.w3.org/2005/07/scxml" xmlns:android="http://com.nosolojava.schemas.android/scxml">
+	<datamodel>
+		<data id="x" expr="1"></data>
+	</datamodel>
+	<state id="s" initial="">
+		<transition event="e.moreSpecific" target="moreSpecific" />
+		<transition event="e" target="s1" cond="x==1" />
+		<transition event="e" target="s2" />
+		<transition event="tree foo.bar" target="sMultiple" />
+		<transition event="error" target="sError" />
+		<transition event="error2." target="sError2" />
+		<transition event="error3.*" target="sError3" />
+		<transition event="err*" target="sError4" />
+		<transition event="*" target="s3" />
+		<state id="s0" />
+		<state id="s1">
+			<onentry>
+				<assign location="x" expr="x+1"></assign>
+			</onentry>
+		</state>
+		<state id="s2" />
+		
+		<state id="moreSpecific" />
+		<state id="sError" />
+		<state id="sError2" />
+		<state id="sError3" />
+		<state id="sError4" />
+		<state id="sMultiple" />
+	</state>
+	<final id="s3" />
+</scxml>

@@ -1,0 +1,41 @@
+<scxml name="invoke" version="1.0" xmlns="http://www.w3.org/2005/07/scxml">
+	<datamodel>
+		<data id="result" />
+		<data id="lastNumber" />
+		<data id="invokeValideVar" expr="'initialValue'" />
+	</datamodel>
+	<state id="calculatorInitState">
+		<datamodel>
+			<data id="invokeInvalidVar" expr="'initialValue'" />
+		</datamodel>
+		<onentry>
+			<assign location="result" expr="0" />
+		</onentry>
+		<transition event="add" type="internal">
+			<assign location="result" expr="_event.data+result" />
+			<assign location="lastNumber" expr="_event.data" />
+			<send target="#_parent" event="result" namelist="result" />
+		</transition>
+		<transition event="sub" type="internal">
+			<assign location="result" expr="result-_event.data" />
+			<assign location="lastNumber" expr="_event.data" />
+			<send target="#_parent" event="result" namelist="result" />
+		</transition>
+		<transition event="mul" type="internal">
+			<assign location="result" expr="result*_event.data" />
+			<assign location="lastNumber" expr="_event.data" />
+			<send target="#_parent" event="result" namelist="result" />
+		</transition>
+		<transition event="clear" type="internal">
+			<assign location="result" expr="_event.data" />
+		</transition>
+		<transition event="exit" target="calculatorEndState" />
+	</state>
+	<final id="calculatorEndState">
+		<donedata>
+			<param name="lastNumber" location="lastNumber" />
+			<param name="invokeValideVar" location="invokeValideVar" />
+			<param name="invokeInvalidVar" location="invokeInvalidVar" />
+		</donedata>
+	</final>
+</scxml>

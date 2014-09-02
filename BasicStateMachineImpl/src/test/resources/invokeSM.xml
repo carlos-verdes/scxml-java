@@ -1,0 +1,44 @@
+<scxml name="invoke" version="1.0" android:version="2" xmlns="http://www.w3.org/2005/07/scxml" xmlns:android="http://com.nosolojava.schemas.android/scxml">
+	<datamodel>
+		<data id="x" expr="0" />
+		<data id="y" expr="0" />
+		<data id="result" expr="0" />
+		<data id="calculatorSessionId" />
+		<data id="lastNumber" expro="-1" />
+		<data id="invokeValideVar" expr="'changedValue'" />
+		<data id="invokeInvalidVar" expr="'changedValue'" />
+	</datamodel>
+	<state id="initState">
+		<transition event="start" target="invokingState" />
+	</state>
+	<state id="invokingState">
+		<!-- invoke another scxml session -->
+		<invoke type="scxml" id="session2" autoforward="false" srcexpr="'classpath:calculatorSM.xml'" namelist="result invokeValideVar invokeInvalidVar">
+			<finalize />
+		</invoke>
+		<!-- send an event to invoked session -->
+		<transition event="enterX" type="internal">
+			<assign location="x" expr="_event.data" />
+		</transition>
+		<transition event="enterY" type="internal">
+			<assign location="y" expr="_event.data" />
+		</transition>
+		<transition event="sumXY" type="internal">
+			<send type="scxml" targetexpr="'#session2'" event="clear">
+				<content expr="x" />
+			</send>
+			<send type="scxml" targetexpr="'#session2'" event="add">
+				<content expr="y" />
+			</send>
+			<send type="scxml" targetexpr="'#session2'" event="exit">
+			</send>
+		</transition>
+		<!-- retrieves the donedata when invoked session has finish -->
+		<transition event="done.invoke.session2" target="finalState">
+			<assign location="lastNumber" expr="_event.data.lastNumber" />
+			<assign location="invokeValideVar" expr="_event.data.invokeValideVar" />
+			<assign location="invokeInvalidVar" expr="_event.data.invokeInvalidVar" />
+		</transition>
+	</state>
+	<final id="finalState" />
+</scxml>

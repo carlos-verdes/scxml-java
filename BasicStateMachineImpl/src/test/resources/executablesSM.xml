@@ -1,0 +1,55 @@
+<scxml name="basicStates" version="0.9" android:version="2"
+	xmlns="http://www.w3.org/2005/07/scxml" xmlns:android="http://com.nosolojava.schemas.android/scxml"
+	xmlns:action="http://com.nosolojava.schemas.fsm/testAction"><!-- node-size-and-position x=0.0 y=0.0 w=290.0 h=313.0 -->
+	<datamodel>
+		<data id="x" expr="1" />
+		<data id="y">init</data>
+		<data id="z">Countries:</data>
+		<data id="countries" expr="['Spain','France','Italy']"></data>
+	</datamodel>
+	<initial id="init1">
+		<transition target="loop" >
+			<foreach array="countries" item="country" index="index">
+				<assign location="z" expr="z+' '+index+'-'+country"/>
+			</foreach>
+		</transition>
+	</initial>
+	<state id="loop" initial="children"><!-- node-size-and-position x=95.0 y=43.0 
+			w=100.0 h=100.0 -->
+		<transition event="event1 event2" target="loop">
+			<assign location="x" expr="x+1" />
+			<action:barrierAction>
+				<action:tag>loop</action:tag>
+			</action:barrierAction>
+		</transition>
+		<transition event="event3" target="end">
+		</transition>
+		<onentry>
+			<if cond="x==1">
+				<assign location="y" expr="'enteringIf'" />
+			<elif cond="x==2" />
+				<assign location="y" expr="'enteringElif'" />
+				<action:barrierAction>
+					<action:tag>elif</action:tag>
+				</action:barrierAction>
+			<else />
+				<assign location="y" expr="'enteringElse'" />
+				<action:barrierAction>
+					<action:tag>else</action:tag>
+				</action:barrierAction>
+				<send event="event3" type="scxml" target="#_internal"/>
+			</if>
+		</onentry>
+		<onexit>
+			<assign location="y" expr="'end'" />
+		</onexit>
+	</state>
+	<final id="end">
+		<onentry>
+		    <assign location="y" expr="'end'" />
+			<action:barrierAction>
+				<action:tag>end</action:tag>
+			</action:barrierAction>
+		</onentry>
+	</final>
+</scxml>

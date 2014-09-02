@@ -1,0 +1,32 @@
+<scxml name="basicStates" version="0.9" android:version="2" xmlns="http://www.w3.org/2005/07/scxml" xmlns:android="http://com.nosolojava.schemas.android/scxml">
+	<datamodel>
+		<data id="onentryStateS" expr="false" />
+	</datamodel>
+	<initial id="init1">
+		<transition target="parent" />
+	</initial>
+	<state id="parent" initial="children">
+		<transition cond="_event.data.status==true" event="android.ACTION_AIRPLANE_MODE_CHANGED" target="disconnected" />
+		<transition event="toS" target="s" />
+		<state id="children" />
+	</state>
+	<state id="s">
+		<onentry>
+			<assign location="onentryStateS" expr="true" />
+		</onentry>
+		<transition event="internal" target="s1" type="internal">
+			<assign location="onentryStateS" expr="false" />
+		</transition>
+		<transition event="external" target="s1">
+			<assign location="onentryStateS" expr="false" />
+		</transition>
+		<state id="s1" />
+	</state>
+	<parallel id="parallel">
+		<history id="h1" type="deep">
+			<transition target="parallelChild1" />
+		</history>
+		<state id="parallelChild1" />
+		<state id="parallelChild2" />
+	</parallel>
+</scxml>

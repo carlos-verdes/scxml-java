@@ -1,0 +1,44 @@
+<scxml name="basicStates" version="1.0" android:version="2" xmlns="http://www.w3.org/2005/07/scxml" xmlns:android="http://com.nosolojava.schemas.android/scxml">
+	<datamodel>
+		<data id="x" expr="0"></data>
+	</datamodel>
+	<parallel id="parallelState">
+		<state id="s">
+			<state id="s1">
+				<transition event="e" target="s2" type="internal" />
+			</state>
+			<final id="s2">
+			    <onentry>
+			        <assign location="x" expr="x+1" />
+			    </onentry>
+				<donedata>
+					<content expr="1" />
+				</donedata>
+			</final>
+		</state>
+		<state id="t">
+			<state id="t1">
+				<transition event="done.state.s" type="internal" target="t2">
+					<assign location="x" expr="x+_event.data" />
+				</transition>
+			</state>
+			<final id="t2">
+				<donedata>
+					<param name="x" location="x"/>
+				</donedata>
+			</final>
+		</state>
+		<state id="u">
+			<state id="u1">
+				<transition event="done.state.t" target="u2">
+					<assign location="x" expr="x+_event.data.x"></assign>
+				</transition>
+			</state>
+			<final id="u2">
+				<onexit>
+					<assign location="x" expr="x+1"></assign>
+				</onexit>
+			</final>
+		</state>
+	</parallel>
+</scxml>

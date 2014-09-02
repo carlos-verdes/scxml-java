@@ -1,0 +1,54 @@
+<scxml name="basicStates" version="0.9" android:version="2" xmlns="http://www.w3.org/2005/07/scxml" xmlns:android="http://com.nosolojava.schemas.android/scxml">
+
+    <!-- 
+    	// s
+		State s = BasicState.createBasicState("s", root);
+
+		// t
+		BasicState t = BasicState.createBasicState("t", root);
+
+		State s1 = BasicState.createBasicState("s1", s);
+		BasicState s11 = BasicState.createBasicState("s11", s1);
+		BasicState s12 = BasicState.createBasicState("s12", s1);
+		BasicState s13 = BasicState.createBasicState("s13", s1);
+		s1.setInitialStateName("s11");
+
+		new BasicHistoryState(s1, "hs1", HistoryTypes.SHALLOW, "s13");
+
+		State s2 = BasicState.createBasicState("s2", s);
+		BasicState.createBasicState("s21", s2);
+		s2.setInitialStateName("s21");
+
+		s.setInitialStateName("s1");
+
+		s11.addTransition("e", "hs1");
+		s.addTransition("f", "hs1");
+		s13.addTransition("e", "s12");
+		s12.addTransition("e", "t");
+		t.addTransition("e", "hs1");
+     -->
+     <state id="s" >
+         <transition event="f" target="hs1" />
+         <state id="s1" initial="s11">
+             <history id="hs1" type="deep">
+                 <transition target="s13" />
+             </history>
+             <state id="s11" >
+                 <transition event="e" target="hs1" />
+             </state>
+             <state id="s12">
+                 <transition event="e" target="t"></transition>
+             </state>
+             <state id="s13">
+                 <transition event="e" target="s12" />
+             </state>
+         </state>
+         <state id="s2">
+             <state id="s21" />
+         </state>
+     </state>
+     <state id="t">
+         <transition event="e" target="hs1" />
+     </state>
+    
+</scxml>
