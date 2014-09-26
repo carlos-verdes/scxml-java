@@ -197,7 +197,7 @@ public class BasicStateMachineTest {
 		listener.getActiveStateNames();
 
 		// after init onentryStateS=false
-		boolean onEntryStateS = context.getDataByName("onentryStateS");
+		Boolean onEntryStateS = context.getDataByName("onentryStateS");
 		Assert.assertFalse(onEntryStateS);
 
 		// event toS, onentryStateS=true

@@ -209,7 +209,7 @@ public class BasicSend implements Send {
 
 	@Override
 	public long getDelay(Context context) {
-		long result;
+		Long result;
 
 		if (this.delay != null) {
 			result = this.delay;
