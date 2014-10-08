@@ -2,7 +2,7 @@
    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
    <modelVersion>4.0.0</modelVersion>
    <groupId>com.nosolojava.fsm</groupId>
-   <artifactId>SimpleStateMachineProject</artifactId>
+   <artifactId>scxml-java</artifactId>
    <version>1.0.1-SNAPSHOT</version>
    <packaging>pom</packaging>
    <name>SimpleStateMachineProject</name>
@@ -78,12 +78,12 @@
          <!-- module dependencies -->
          <dependency>
             <groupId>com.nosolojava.fsm</groupId>
-            <artifactId>SimpleStateMachine</artifactId>
+            <artifactId>scxml-java-interface</artifactId>
             <version>${project.version}</version>
          </dependency>
          <dependency>
             <groupId>com.nosolojava.fsm</groupId>
-            <artifactId>BasicStateMachineImpl</artifactId>
+            <artifactId>scxml-java-implementation</artifactId>
             <version>${project.version}</version>
          </dependency>
          <!-- jexl -->
@@ -120,7 +120,7 @@
    </distributionManagement>
 
    <modules>
-      <module>SimpleStateMachine</module>
-      <module>BasicStateMachineImpl</module>
+      <module>scxml-java-interface</module>
+      <module>scxml-java-implementation</module>
    </modules>
 </project>

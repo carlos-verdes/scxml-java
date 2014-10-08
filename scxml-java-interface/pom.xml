@@ -2,33 +2,17 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
-		<artifactId>SimpleStateMachineProject</artifactId>
+		<artifactId>scxml-java</artifactId>
 		<groupId>com.nosolojava.fsm</groupId>
 		<version>1.0.1-SNAPSHOT</version>
-		<relativePath>..</relativePath>
 	</parent>
-	<artifactId>BasicStateMachineImpl</artifactId>
+	<artifactId>scxml-java-interface</artifactId>
+	<name>SimpleStateMachine</name>
 	<dependencies>
-		<!-- state machine interfaces -->
-		<dependency>
-			<groupId>com.nosolojava.fsm</groupId>
-			<artifactId>SimpleStateMachine</artifactId>
-		</dependency>
 		<!-- jexl -->
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-jexl</artifactId>
-		</dependency>
-		<!-- xpp parser -->
-		<dependency>
-			<groupId>xmlpull</groupId>
-			<artifactId>xmlpull</artifactId>
-			<version>1.1.3.4a</version>
-		</dependency>
-		<dependency>
-			<groupId>xpp3</groupId>
-			<artifactId>xpp3</artifactId>
-			<version>1.1.4c</version>
 		</dependency>
 		<!-- testing -->
 		<dependency>
