@@ -10,7 +10,10 @@ You can clone from https://github.com/nosolojava/scxml-android.git
 
 
 This module will be in a public repository, right now you should download and do a clean-install with Maven:
+
+```
     git clone https://github.com/nosolojava/scxml-java.git
     mvn clean install
+```
 
  
