@@ -8,3 +8,9 @@ This implementation has only dependency with Apache JEXL to evaluate context exp
 Android lib has been publised to use this lib in Android apps.
 You can clone from https://github.com/nosolojava/scxml-android.git
 
+
+This module will be in a public repository, right now you should download and do a clean-install with Maven:
+    git clone https://github.com/nosolojava/scxml-java.git
+    mvn clean install
+
+ 
