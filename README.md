@@ -19,7 +19,7 @@ This module will be in a public repository, right now you should download and do
 
  
 Then you can create in the classpath an SCXML resource like this (in the example simpleSM.xml):
-```
+```xml
 <scxml name="basicStates" version="1.0" android:version="2" xmlns="http://www.w3.org/2005/07/scxml" xmlns:android="http://com.nosolojava.schemas.android/scxml">
 	<datamodel>
 		<data id="salute" expr="'hello world'" />
@@ -46,7 +46,7 @@ Then you can create in the classpath an SCXML resource like this (in the example
 ```
 
 And then you can start SM session like this:
-```
+```java
 // set DEBUG true|false
 BasicStateMachineFramework.DEBUG.set(true);
 // init engine
