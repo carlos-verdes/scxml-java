@@ -13,6 +13,7 @@ This module will be in a public repository, right now you should download and do
 
 ```
     git clone https://github.com/nosolojava/scxml-java.git
+    cd scxml-java
     mvn clean install
 ```
 
