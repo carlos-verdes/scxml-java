@@ -39,11 +39,14 @@ public class TestXPPParser {
 	public void parseSimpleXML() throws XmlPullParserException, ConfigurationException, IOException,
 			InterruptedException, URISyntaxException, SCXMLParserException {
 
-		// init framework
+		// set DEBUG true|false
+		BasicStateMachineFramework.DEBUG.set(true);
+		// init engine
 		StateMachineEngine engine = new BasicStateMachineEngine();
-		BasicStateMachineFramework.DEBUG.set(false);
 		engine.start();
-		Context ctx = engine.startFSMSession(null, new URI("classpath:simpleSM.xml"));
+		
+		//start a state machine session
+		Context ctx = engine.startFSMSession(new URI("classpath:simpleSM.xml"));
 //		Context ctx = engine.startFSMSession(null, new URI("http://nosolojava.com/simpleSM.xml"));
 //		Context ctx = engine.startFSMSession(null, new URI("file:///c:/Users/cverdes/workspace/eclipse-ws/scxml-java/scxml-java-implementation/src/test/resources/simpleSM.xml"));
 		
