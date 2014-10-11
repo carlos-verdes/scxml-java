@@ -5,6 +5,7 @@ import java.net.URI;
 
 import com.nosolojava.fsm.model.StateMachineModel;
 import com.nosolojava.fsm.model.config.exception.ConfigurationException;
+import com.nosolojava.fsm.parser.exception.SCXMLParserException;
 
 public interface StateMachineParser {
 
@@ -16,6 +17,6 @@ public interface StateMachineParser {
 	 */
 	boolean validURI(URI source);
 
-	StateMachineModel parseScxml(URI source) throws ConfigurationException, IOException;
+	StateMachineModel parseScxml(URI source) throws ConfigurationException, IOException,SCXMLParserException;
 	
 }

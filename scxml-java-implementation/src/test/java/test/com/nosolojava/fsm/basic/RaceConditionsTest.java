@@ -12,13 +12,14 @@ import org.junit.Test;
 import com.nosolojava.fsm.impl.runtime.basic.BasicEvent;
 import com.nosolojava.fsm.impl.runtime.basic.BasicStateMachineEngine;
 import com.nosolojava.fsm.model.config.exception.ConfigurationException;
+import com.nosolojava.fsm.parser.exception.SCXMLParserException;
 import com.nosolojava.fsm.runtime.Context;
 import com.nosolojava.fsm.runtime.StateMachineEngine;
 
 public class RaceConditionsTest {
 
 	@Test
-	public void testIncrementalRaceCondition() throws ConfigurationException, IOException, InterruptedException {
+	public void testIncrementalRaceCondition() throws ConfigurationException, IOException, InterruptedException, SCXMLParserException {
 
 		int iterations = 100;
 		int instances = 100;

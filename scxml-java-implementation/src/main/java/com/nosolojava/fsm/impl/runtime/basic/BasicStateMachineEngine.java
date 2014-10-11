@@ -31,6 +31,7 @@ import com.nosolojava.fsm.model.config.exception.ConfigurationException;
 import com.nosolojava.fsm.parser.StateMachineParser;
 import com.nosolojava.fsm.parser.XppActionParser;
 import com.nosolojava.fsm.parser.XppStateMachineParser;
+import com.nosolojava.fsm.parser.exception.SCXMLParserException;
 import com.nosolojava.fsm.runtime.Context;
 import com.nosolojava.fsm.runtime.ContextFactory;
 import com.nosolojava.fsm.runtime.Event;
@@ -175,19 +176,19 @@ public class BasicStateMachineEngine implements StateMachineEngine {
 	}
 
 	@Override
-	public Context startFSMSession(URI fsmModelUri) throws ConfigurationException, IOException {
+	public Context startFSMSession(URI fsmModelUri) throws ConfigurationException, IOException, SCXMLParserException {
 
 		return this.startFSMSession(null, null, fsmModelUri, null);
 	}
 
 	@Override
-	public Context startFSMSession(String parentSessionId, URI fsmModelUri) throws ConfigurationException, IOException {
+	public Context startFSMSession(String parentSessionId, URI fsmModelUri) throws ConfigurationException, IOException, SCXMLParserException {
 		return startFSMSession(null, parentSessionId, fsmModelUri, null);
 	}
 
 	@Override
 	public Context startFSMSession(String sessionId, String parentSessionId, URI fsmModelUri,
-			Map<String, Serializable> initValues) throws ConfigurationException, IOException {
+			Map<String, Serializable> initValues) throws ConfigurationException, IOException, SCXMLParserException {
 
 		this.startStopLock.lock();
 		Context context;

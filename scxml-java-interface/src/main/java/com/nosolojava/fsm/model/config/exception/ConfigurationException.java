@@ -2,6 +2,11 @@ package com.nosolojava.fsm.model.config.exception;
 
 import java.text.MessageFormat;
 
+/**
+ * Exception when the xml from a SCXML source doesn't fulfill all the SCXML requirements.
+ * @author cverdes
+ *
+ */
 public class ConfigurationException extends Exception {
 	public static final long serialVersionUID = 7413205787975925674L;
 

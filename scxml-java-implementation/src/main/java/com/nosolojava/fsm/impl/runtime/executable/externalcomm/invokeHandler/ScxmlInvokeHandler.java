@@ -9,6 +9,7 @@ import java.util.logging.Logger;
 
 import com.nosolojava.fsm.impl.runtime.executable.externalcomm.basic.AbstractBasicInvokeHandler;
 import com.nosolojava.fsm.model.config.exception.ConfigurationException;
+import com.nosolojava.fsm.parser.exception.SCXMLParserException;
 import com.nosolojava.fsm.runtime.Context;
 import com.nosolojava.fsm.runtime.StateMachineEngine;
 import com.nosolojava.fsm.runtime.executable.externalcomm.InvokeInfo;
@@ -68,6 +69,9 @@ public class ScxmlInvokeHandler extends AbstractBasicInvokeHandler {
 			// TODO manage errors on invoke handler
 			e.printStackTrace();
 		} catch (IOException e) {
+			// TODO manage errors on invoke handler
+			e.printStackTrace();
+		} catch (SCXMLParserException e) {
 			// TODO manage errors on invoke handler
 			e.printStackTrace();
 		}

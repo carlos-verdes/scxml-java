@@ -3,9 +3,11 @@ package com.nosolojava.fsm.parser;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -51,6 +53,7 @@ import com.nosolojava.fsm.model.state.HistoryTypes;
 import com.nosolojava.fsm.model.state.InitialState;
 import com.nosolojava.fsm.model.state.State;
 import com.nosolojava.fsm.model.transition.Transition;
+import com.nosolojava.fsm.parser.exception.SCXMLParserException;
 import com.nosolojava.fsm.runtime.executable.Elif;
 import com.nosolojava.fsm.runtime.executable.Else;
 import com.nosolojava.fsm.runtime.executable.Executable;
@@ -59,7 +62,8 @@ import com.nosolojava.fsm.runtime.executable.If;
 import com.nosolojava.fsm.runtime.executable.Log;
 
 public class XppStateMachineParser implements StateMachineParser {
-	//	private final Logger logger = Logger.getLogger(this.getClass().getName());
+	// private final Logger logger =
+	// Logger.getLogger(this.getClass().getName());
 
 	public static final String SCXML = "scxml";
 	public static final String INITIAL = "initial";
@@ -114,6 +118,7 @@ public class XppStateMachineParser implements StateMachineParser {
 	protected static final String LABEL = "label";
 
 	public final static String CLASSPATH = "classpath";
+	public final static String HTTP = "http";
 
 	private final Map<String, XppActionParser> actionParsers = new ConcurrentHashMap<String, XppActionParser>();
 
@@ -121,7 +126,8 @@ public class XppStateMachineParser implements StateMachineParser {
 		super();
 	}
 
-	public XppStateMachineParser(List<XppActionParser> actionParsers) throws ConfigurationException {
+	public XppStateMachineParser(List<XppActionParser> actionParsers)
+			throws ConfigurationException {
 
 		this();
 
@@ -129,7 +135,9 @@ public class XppStateMachineParser implements StateMachineParser {
 			for (XppActionParser actionParser : actionParsers) {
 				String ns = actionParser.getNamespace();
 				if (this.actionParsers.containsKey(ns)) {
-					throw new ConfigurationException("Action parser repeated for ns {0}", new Object[] { ns });
+					throw new ConfigurationException(
+							"Action parser repeated for ns {0}",
+							new Object[] { ns });
 				}
 				this.actionParsers.put(ns, actionParser);
 			}
@@ -141,40 +149,86 @@ public class XppStateMachineParser implements StateMachineParser {
 	public boolean validURI(URI source) {
 
 		boolean result = false;
-		if (isClasspathURI(source)) {
-			result = true;
+		if (source != null) {
+			if (isClasspathURI(source)) {
+				result = true;
+			} else {
+				// try to create a url from URI so an inputstream could be
+				// obtained
+				try {
+					new URL(source.toString());
+					result = true;
+				} catch (MalformedURLException e) {
+					e.printStackTrace();
+				}
+			}
+
 		}
 
 		return result;
 	}
 
 	protected boolean isClasspathURI(URI source) {
-		return source != null && source.getScheme().equals(CLASSPATH);
+		return hasURIScheme(source, CLASSPATH);
+	}
+
+	protected boolean isHttpURI(URI source) {
+		return hasURIScheme(source, HTTP);
+	}
+
+	protected boolean hasURIScheme(URI source, String scheme) {
+		return source != null && source.getScheme().equals(scheme);
 	}
 
 	@Override
-	public StateMachineModel parseScxml(URI source) throws ConfigurationException, IOException {
+	public StateMachineModel parseScxml(URI source)
+			throws ConfigurationException, IOException, SCXMLParserException {
 
-		StateMachineModel model = null;
+		if (source == null) {
+			throw new SCXMLParserException(
+					"Error parsing SCXML, source is null");
+		}
+
+		InputStream is = null;
 		if (isClasspathURI(source)) {
 			String location = source.getSchemeSpecificPart();
 
-			InputStream is = ClassLoader.getSystemClassLoader().getResourceAsStream(location);
+			is = ClassLoader.getSystemClassLoader().getResourceAsStream(
+					location);
+
+		} else {
+
 			try {
-				XmlPullParser parser = XmlPullParserFactory.newInstance().newPullParser();
-				parser.setInput(is, null);
+				URL url = new URL(source.toString());
+				is = (InputStream) url.getContent();
+			} catch (Exception e) {
+				throw new SCXMLParserException(String.format(
+						"SCXML uri %s is not supported.", source), e);
 
-				model = this.parseXPP(parser, "");
-			} catch (XmlPullParserException e) {
-				throw new ConfigurationException("Error parsing scxml from classpath with xpp, uri: " + source, e);
 			}
+		}
 
+		StateMachineModel model = null;
+		try {
+			XmlPullParser parser = XmlPullParserFactory.newInstance()
+					.newPullParser();
+			parser.setInput(is, null);
+
+			model = this.parseXPP(parser, "");
+		} catch (XmlPullParserException e) {
+			throw new ConfigurationException(
+					"Error parsing scxml from classpath with xpp, uri: "
+							+ source, e);
+		} finally {
+			if (is != null) {
+				is.close();
+			}
 		}
 
 		return model;
 	}
 
-	//methods to extend
+	// methods to extend
 	protected StateMachineModel createStateMachine(State rootState) {
 		StateMachineModel smm = new BasicStateMachineModel(rootState);
 		return smm;
@@ -197,14 +251,14 @@ public class XppStateMachineParser implements StateMachineParser {
 		return currentExec;
 	}
 
-	public StateMachineModel parseXPP(XmlPullParser xpp) throws XmlPullParserException, IOException,
-			ConfigurationException {
+	public StateMachineModel parseXPP(XmlPullParser xpp)
+			throws XmlPullParserException, IOException, ConfigurationException {
 		return parseXPP(xpp, null);
 
 	}
 
-	public StateMachineModel parseXPP(XmlPullParser xpp, String namespace) throws XmlPullParserException, IOException,
-			ConfigurationException {
+	public StateMachineModel parseXPP(XmlPullParser xpp, String namespace)
+			throws XmlPullParserException, IOException, ConfigurationException {
 
 		xpp.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, true);
 
@@ -229,15 +283,18 @@ public class XppStateMachineParser implements StateMachineParser {
 					// parse state or parallel state tag
 				} else if (HISTORY.equals(tagName)) {
 					parseHistoryState(namespace, xpp, currentState);
-				} else if (STATE.equals(tagName) || PARALLEL.equals(tagName) || FINAL.equals(tagName)) {
-					currentState = parseState(namespace, xpp, currentState, tagName);
+				} else if (STATE.equals(tagName) || PARALLEL.equals(tagName)
+						|| FINAL.equals(tagName)) {
+					currentState = parseState(namespace, xpp, currentState,
+							tagName);
 					if (currentState.isFinal()) {
 						currentState = currentState.getParent();
 					}
 				}
 				// parse transition tag
 				else if (TRANSITION.equals(tagName)) {
-					currentTransition = parseTransition(namespace, xpp, currentState);
+					currentTransition = parseTransition(namespace, xpp,
+							currentState);
 					currentState.addTransition(currentTransition);
 
 					executables = parseExecutables(namespace, xpp);
@@ -261,7 +318,8 @@ public class XppStateMachineParser implements StateMachineParser {
 			} else if (xpp.getEventType() == XmlPullParser.END_TAG) {
 
 				// if a state has been parsed
-				if (STATE.equals(tagName) || PARALLEL.equals(tagName) || FINAL.equals(tagName)) {
+				if (STATE.equals(tagName) || PARALLEL.equals(tagName)
+						|| FINAL.equals(tagName)) {
 					// current state is the parent state
 					currentState = currentState.getParent();
 				}
@@ -301,17 +359,20 @@ public class XppStateMachineParser implements StateMachineParser {
 		return result;
 	}
 
-	private void parseDatamodel(String namespace, XmlPullParser xpp, State currentState) throws XmlPullParserException,
-			IOException, ConfigurationException {
+	private void parseDatamodel(String namespace, XmlPullParser xpp,
+			State currentState) throws XmlPullParserException, IOException,
+			ConfigurationException {
 		String endTag = xpp.getName();
 
-		while (!endTag.equals(xpp.getName()) || xpp.getEventType() != XmlPullParser.END_TAG) {
+		while (!endTag.equals(xpp.getName())
+				|| xpp.getEventType() != XmlPullParser.END_TAG) {
 			xpp.next();
 
 			if (xpp.getEventType() == XmlPullParser.START_TAG) {
 				String id = xpp.getAttributeValue(namespace, ID);
 				if (id == null) {
-					throw new ConfigurationException("ID is mandatory for data element");
+					throw new ConfigurationException(
+							"ID is mandatory for data element");
 				}
 
 				String src = xpp.getAttributeValue(namespace, SRC);
@@ -337,8 +398,8 @@ public class XppStateMachineParser implements StateMachineParser {
 
 	}
 
-	private Invoke parseInvoke(String ns, XmlPullParser xpp) throws XmlPullParserException, IOException,
-			ConfigurationException {
+	private Invoke parseInvoke(String ns, XmlPullParser xpp)
+			throws XmlPullParserException, IOException, ConfigurationException {
 		// get the invoke tag
 		String endTag = xpp.getName();
 
@@ -359,7 +420,8 @@ public class XppStateMachineParser implements StateMachineParser {
 		String typeExpression = xpp.getAttributeValue(ns, TYPEEXPR);
 		String namelist = xpp.getAttributeValue(ns, NAMELIST);
 		String autoForwardString = xpp.getAttributeValue(ns, AUTO_FORWARD);
-		boolean autoForward = autoForwardString != null && TRUE.equals(autoForwardString) ? true : false;
+		boolean autoForward = autoForwardString != null
+				&& TRUE.equals(autoForwardString) ? true : false;
 		Finalize finalize = null;
 		String content = null;
 		String contentExpr = null;
@@ -367,12 +429,14 @@ public class XppStateMachineParser implements StateMachineParser {
 		// while not invoke end tag--> parse invoke
 		Param param;
 		Set<Param> params = new HashSet<Param>();
-		while (!endTag.equals(xpp.getName()) || xpp.getEventType() != XmlPullParser.END_TAG) {
+		while (!endTag.equals(xpp.getName())
+				|| xpp.getEventType() != XmlPullParser.END_TAG) {
 			xpp.next();
 			// if we have a start tag we have more to parse
 			if (xpp.getEventType() == XmlPullParser.START_TAG) {
 				// parse param
-				if (PARAM.equals(xpp.getName()) && xpp.getEventType() != XmlPullParser.END_TAG) {
+				if (PARAM.equals(xpp.getName())
+						&& xpp.getEventType() != XmlPullParser.END_TAG) {
 					String name = xpp.getAttributeValue(ns, NAME);
 					String expr = xpp.getAttributeValue(ns, EXPR);
 					String location = xpp.getAttributeValue(ns, LOCATION);
@@ -382,7 +446,8 @@ public class XppStateMachineParser implements StateMachineParser {
 				}
 
 				// parse content
-				if (CONTENT.equals(xpp.getName()) && xpp.getEventType() != XmlPullParser.END_TAG) {
+				if (CONTENT.equals(xpp.getName())
+						&& xpp.getEventType() != XmlPullParser.END_TAG) {
 					contentExpr = xpp.getAttributeValue(ns, EXPR);
 					if (contentExpr == null) {
 						xpp.next();
@@ -391,7 +456,8 @@ public class XppStateMachineParser implements StateMachineParser {
 				}
 
 				// parse finalize
-				if (FINALIZE.equals(xpp.getName()) && xpp.getEventType() != XmlPullParser.END_TAG) {
+				if (FINALIZE.equals(xpp.getName())
+						&& xpp.getEventType() != XmlPullParser.END_TAG) {
 					List<Executable> executables = parseExecutables(ns, xpp);
 					finalize = new BasicFinalize(executables);
 				}
@@ -401,14 +467,15 @@ public class XppStateMachineParser implements StateMachineParser {
 
 		Body body = extractBody(namelist, content, contentExpr, params);
 
-		Invoke result = new BasicInvoke(id, idLocation, src, srcExpression, type, typeExpression, autoForward,
-				finalize, body);
+		Invoke result = new BasicInvoke(id, idLocation, src, srcExpression,
+				type, typeExpression, autoForward, finalize, body);
 
 		return result;
 	}
 
-	private List<Executable> parseExecutables(String scxmlNamespace, XmlPullParser xpp) throws XmlPullParserException,
-			IOException, ConfigurationException {
+	private List<Executable> parseExecutables(String scxmlNamespace,
+			XmlPullParser xpp) throws XmlPullParserException, IOException,
+			ConfigurationException {
 		// get the parent tag for executables
 		String endTag = xpp.getName();
 
@@ -416,7 +483,8 @@ public class XppStateMachineParser implements StateMachineParser {
 		Executable currentExec = null;
 
 		// while not parent end tag--> parse executables
-		while (!endTag.equals(xpp.getName()) || xpp.getEventType() != XmlPullParser.END_TAG) {
+		while (!endTag.equals(xpp.getName())
+				|| xpp.getEventType() != XmlPullParser.END_TAG) {
 			xpp.next();
 
 			// if we have a start tag we have executables
@@ -434,8 +502,8 @@ public class XppStateMachineParser implements StateMachineParser {
 		return result;
 	}
 
-	private Executable parseExecutable(String scxmlNamespace, XmlPullParser xpp) throws XmlPullParserException,
-			IOException, ConfigurationException {
+	private Executable parseExecutable(String scxmlNamespace, XmlPullParser xpp)
+			throws XmlPullParserException, IOException, ConfigurationException {
 		String tagName;
 		tagName = xpp.getName();
 		Executable currentExec = null;
@@ -474,8 +542,8 @@ public class XppStateMachineParser implements StateMachineParser {
 		return currentExec;
 	}
 
-	private Executable parseScript(String namespace, XmlPullParser xpp) throws ConfigurationException,
-			XmlPullParserException, IOException {
+	private Executable parseScript(String namespace, XmlPullParser xpp)
+			throws ConfigurationException, XmlPullParserException, IOException {
 		Executable result = null;
 		String urlExpr = xpp.getAttributeValue(namespace, SRC);
 		String content = xpp.nextText();
@@ -484,7 +552,8 @@ public class XppStateMachineParser implements StateMachineParser {
 		}
 
 		if (urlExpr != null && !"".equals(content.trim())) {
-			throw new ConfigurationException("Script can't have src attribute and content");
+			throw new ConfigurationException(
+					"Script can't have src attribute and content");
 		}
 
 		if (urlExpr != null) {
@@ -496,8 +565,8 @@ public class XppStateMachineParser implements StateMachineParser {
 		return result;
 	}
 
-	private Executable parseSend(String ns, XmlPullParser xpp) throws XmlPullParserException, IOException,
-			ConfigurationException {
+	private Executable parseSend(String ns, XmlPullParser xpp)
+			throws XmlPullParserException, IOException, ConfigurationException {
 		String eventName = xpp.getAttributeValue(ns, EVENT);
 		String eventexpr = xpp.getAttributeValue(ns, EVENTEXPR);
 
@@ -522,10 +591,12 @@ public class XppStateMachineParser implements StateMachineParser {
 		String contentExpr = null;
 		Set<Param> params = new HashSet<Param>();
 		Param param;
-		while (!SEND.equals(xpp.getName()) || xpp.getEventType() != XmlPullParser.END_TAG) {
+		while (!SEND.equals(xpp.getName())
+				|| xpp.getEventType() != XmlPullParser.END_TAG) {
 			xpp.next();
 
-			if (PARAM.equals(xpp.getName()) && xpp.getEventType() != XmlPullParser.END_TAG) {
+			if (PARAM.equals(xpp.getName())
+					&& xpp.getEventType() != XmlPullParser.END_TAG) {
 				String name = xpp.getAttributeValue(ns, NAME);
 				String expr = xpp.getAttributeValue(ns, EXPR);
 				String location = xpp.getAttributeValue(ns, LOCATION);
@@ -534,7 +605,8 @@ public class XppStateMachineParser implements StateMachineParser {
 				params.add(param);
 			}
 
-			if (CONTENT.equals(xpp.getName()) && xpp.getEventType() != XmlPullParser.END_TAG) {
+			if (CONTENT.equals(xpp.getName())
+					&& xpp.getEventType() != XmlPullParser.END_TAG) {
 				contentExpr = xpp.getAttributeValue(ns, EXPR);
 				if (contentExpr == null) {
 					xpp.next();
@@ -546,35 +618,40 @@ public class XppStateMachineParser implements StateMachineParser {
 
 		Body body = extractBody(namelist, content, contentExpr, params);
 
-		Send result = new BasicSend(id, idlocation, eventName, eventexpr, type, typeexpr, target, targetexpr, delay,
-				delayexpr, body);
+		Send result = new BasicSend(id, idlocation, eventName, eventexpr, type,
+				typeexpr, target, targetexpr, delay, delayexpr, body);
 
 		return result;
 	}
 
-	protected Body extractBody(String namelist, String content, String contentExpr, Set<Param> params)
+	protected Body extractBody(String namelist, String content,
+			String contentExpr, Set<Param> params)
 			throws ConfigurationException {
 		Body body = null;
 		if (content != null && contentExpr != null) {
-			throw new ConfigurationException("Can't be both content children and content expression");
+			throw new ConfigurationException(
+					"Can't be both content children and content expression");
 		}
 
-		if ((content != null || contentExpr != null) && params != null && !params.isEmpty()) {
+		if ((content != null || contentExpr != null) && params != null
+				&& !params.isEmpty()) {
 			throw new ConfigurationException("Can't be both content and params");
 		}
 
 		if (content != null) {
-			body = BasicBody.createContentBody(BasicContent.createSimpleContent(content));
+			body = BasicBody.createContentBody(BasicContent
+					.createSimpleContent(content));
 		} else if (contentExpr != null) {
-			body = BasicBody.createContentBody(BasicContent.createContentExpression(contentExpr));
+			body = BasicBody.createContentBody(BasicContent
+					.createContentExpression(contentExpr));
 		} else {
 			body = BasicBody.createParamsBody(params, namelist);
 		}
 		return body;
 	}
 
-	private Executable parseForEach(String scxmlNamespace, XmlPullParser xpp) throws XmlPullParserException,
-			IOException, ConfigurationException {
+	private Executable parseForEach(String scxmlNamespace, XmlPullParser xpp)
+			throws XmlPullParserException, IOException, ConfigurationException {
 		String array = xpp.getAttributeValue(scxmlNamespace, ARRAY);
 		String item = xpp.getAttributeValue(scxmlNamespace, ITEM);
 		String index = xpp.getAttributeValue(scxmlNamespace, INDEX);
@@ -586,7 +663,8 @@ public class XppStateMachineParser implements StateMachineParser {
 		return result;
 	}
 
-	private Executable parseAssign(String scxmlNamespace, XmlPullParser xpp) throws XmlPullParserException, IOException {
+	private Executable parseAssign(String scxmlNamespace, XmlPullParser xpp)
+			throws XmlPullParserException, IOException {
 		Executable currentExec;
 		String location = xpp.getAttributeValue(scxmlNamespace, LOCATION);
 		String expr = xpp.getAttributeValue(scxmlNamespace, EXPRESSION);
@@ -599,8 +677,8 @@ public class XppStateMachineParser implements StateMachineParser {
 		return currentExec;
 	}
 
-	private If parseIf(String scxmlNamespace, XmlPullParser xpp) throws XmlPullParserException, IOException,
-			ConfigurationException {
+	private If parseIf(String scxmlNamespace, XmlPullParser xpp)
+			throws XmlPullParserException, IOException, ConfigurationException {
 		String ifcond = xpp.getAttributeValue(scxmlNamespace, GUARD_CONDITION);
 		List<Elif> elifs = new ArrayList<Elif>();
 		String elifcond = null;
@@ -613,7 +691,8 @@ public class XppStateMachineParser implements StateMachineParser {
 		boolean foundElif = false;
 		boolean foundElse = false;
 
-		while (!xpp.getName().equals(IF_COND) || xpp.getEventType() != XmlPullParser.END_TAG) {
+		while (!xpp.getName().equals(IF_COND)
+				|| xpp.getEventType() != XmlPullParser.END_TAG) {
 			xpp.nextTag();
 			String tagName = xpp.getName();
 
@@ -623,10 +702,12 @@ public class XppStateMachineParser implements StateMachineParser {
 
 					// manage previous elif
 					if (foundElif) {
-						elifExecutables = loadPreviousElif(scxmlNamespace, xpp, elifs, elifExecutables, elifcond);
+						elifExecutables = loadPreviousElif(scxmlNamespace, xpp,
+								elifs, elifExecutables, elifcond);
 					}
 					// flag elif found
-					elifcond = xpp.getAttributeValue(scxmlNamespace, GUARD_CONDITION);
+					elifcond = xpp.getAttributeValue(scxmlNamespace,
+							GUARD_CONDITION);
 					foundElif = true;
 
 				} else if (ELSE_COND.equals(tagName)) {
@@ -652,7 +733,8 @@ public class XppStateMachineParser implements StateMachineParser {
 
 		// create last elif
 		if (foundElif) {
-			elifExecutables = loadPreviousElif(scxmlNamespace, xpp, elifs, elifExecutables, elifcond);
+			elifExecutables = loadPreviousElif(scxmlNamespace, xpp, elifs,
+					elifExecutables, elifcond);
 		}
 		// create else
 		if (foundElse) {
@@ -665,7 +747,8 @@ public class XppStateMachineParser implements StateMachineParser {
 		return result;
 	}
 
-	private List<Executable> loadPreviousElif(String scxmlNamespace, XmlPullParser xpp, List<Elif> elifs,
+	private List<Executable> loadPreviousElif(String scxmlNamespace,
+			XmlPullParser xpp, List<Elif> elifs,
 			List<Executable> elifExecutables, String elifcond) {
 		Elif elif = new BasicElif(elifcond, elifExecutables);
 		elifs.add(elif);
@@ -673,7 +756,8 @@ public class XppStateMachineParser implements StateMachineParser {
 		return elifExecutables;
 	}
 
-	private Transition parseTransition(String ns, XmlPullParser xpp, State currentState) {
+	private Transition parseTransition(String ns, XmlPullParser xpp,
+			State currentState) {
 		Transition result = null;
 
 		String targetState = xpp.getAttributeValue(ns, TARGET);
@@ -682,13 +766,14 @@ public class XppStateMachineParser implements StateMachineParser {
 		String guardCondition = xpp.getAttributeValue(ns, GUARD_CONDITION);
 		String type = xpp.getAttributeValue(ns, TYPE);
 		boolean internal = type != null && INTERNAL.equals(type);
-		result = new BasicTransition(currentState.getName(), eventName, targetState, guardCondition, internal);
+		result = new BasicTransition(currentState.getName(), eventName,
+				targetState, guardCondition, internal);
 
 		return result;
 	}
 
-	private void parseInitialState(String ns, XmlPullParser xpp, State state) throws ConfigurationException,
-			XmlPullParserException, IOException {
+	private void parseInitialState(String ns, XmlPullParser xpp, State state)
+			throws ConfigurationException, XmlPullParserException, IOException {
 		String id = xpp.getAttributeValue(ns, ID);
 
 		goUntil(xpp, XmlPullParser.START_TAG);
@@ -707,8 +792,8 @@ public class XppStateMachineParser implements StateMachineParser {
 		state.setInitialState(initial);
 	}
 
-	private void parseHistoryState(String ns, XmlPullParser xpp, State state) throws ConfigurationException,
-			XmlPullParserException, IOException {
+	private void parseHistoryState(String ns, XmlPullParser xpp, State state)
+			throws ConfigurationException, XmlPullParserException, IOException {
 		String id = xpp.getAttributeValue(ns, ID);
 		String historyTypeString = xpp.getAttributeValue(ns, TYPE);
 
@@ -730,13 +815,16 @@ public class XppStateMachineParser implements StateMachineParser {
 
 	}
 
-	private void tagNotExpectedError(XmlPullParser scxmlParser, String expected, String found)
-			throws ConfigurationException {
-		throw new ConfigurationException("Tag {0} not expected. {1} expected. Line number: {2}", new Object[] { found,expected,scxmlParser.getLineNumber() });
+	private void tagNotExpectedError(XmlPullParser scxmlParser,
+			String expected, String found) throws ConfigurationException {
+		throw new ConfigurationException(
+				"Tag {0} not expected. {1} expected. Line number: {2}",
+				new Object[] { found, expected, scxmlParser.getLineNumber() });
 	}
 
-	private State parseState(String ns, XmlPullParser xpp, State parent, String tagName) throws XmlPullParserException,
-			IOException, ConfigurationException {
+	private State parseState(String ns, XmlPullParser xpp, State parent,
+			String tagName) throws XmlPullParserException, IOException,
+			ConfigurationException {
 
 		String id = xpp.getAttributeValue(ns, ID);
 		if (id == null) {
@@ -753,7 +841,7 @@ public class XppStateMachineParser implements StateMachineParser {
 			}
 		} else if (FINAL.equals(tagName)) {
 
-			//check if final has content or params
+			// check if final has content or params
 
 			Param param;
 			String content = null;
@@ -762,12 +850,14 @@ public class XppStateMachineParser implements StateMachineParser {
 			List<Executable> onEntryExec = null;
 			List<Executable> onExitExec = null;
 
-			while (!FINAL.equals(xpp.getName()) || xpp.getEventType() != XmlPullParser.END_TAG) {
+			while (!FINAL.equals(xpp.getName())
+					|| xpp.getEventType() != XmlPullParser.END_TAG) {
 				xpp.next();
 				// if we have a start tag we have more to parse
 				if (xpp.getEventType() == XmlPullParser.START_TAG) {
 					// parse param
-					if (PARAM.equals(xpp.getName()) && xpp.getEventType() != XmlPullParser.END_TAG) {
+					if (PARAM.equals(xpp.getName())
+							&& xpp.getEventType() != XmlPullParser.END_TAG) {
 						String name = xpp.getAttributeValue(ns, NAME);
 						String expr = xpp.getAttributeValue(ns, EXPR);
 						String location = xpp.getAttributeValue(ns, LOCATION);
@@ -777,7 +867,8 @@ public class XppStateMachineParser implements StateMachineParser {
 					}
 
 					// parse content
-					if (CONTENT.equals(xpp.getName()) && xpp.getEventType() != XmlPullParser.END_TAG) {
+					if (CONTENT.equals(xpp.getName())
+							&& xpp.getEventType() != XmlPullParser.END_TAG) {
 						contentExpr = xpp.getAttributeValue(ns, EXPR);
 						if (contentExpr == null) {
 							xpp.next();
@@ -812,7 +903,8 @@ public class XppStateMachineParser implements StateMachineParser {
 		return state;
 	}
 
-	private void goUntil(XmlPullParser scxmlParser, int startTag) throws XmlPullParserException, IOException {
+	private void goUntil(XmlPullParser scxmlParser, int startTag)
+			throws XmlPullParserException, IOException {
 		int next = scxmlParser.next();
 		while (next != XmlPullParser.END_DOCUMENT && next != startTag) {
 			next = scxmlParser.next();
@@ -820,8 +912,9 @@ public class XppStateMachineParser implements StateMachineParser {
 
 	}
 
-	private StateMachineModel parseRootState(String namespace, XmlPullParser scxmlParser)
-			throws ConfigurationException, XmlPullParserException {
+	private StateMachineModel parseRootState(String namespace,
+			XmlPullParser scxmlParser) throws ConfigurationException,
+			XmlPullParserException {
 		State rootState = createRootState();
 		StateMachineModel smm = createStateMachine(rootState);
 
@@ -837,9 +930,11 @@ public class XppStateMachineParser implements StateMachineParser {
 		}
 
 		float auxFloat;
-		String attributeValue = scxmlParser.getAttributeValue(namespace, "version");
+		String attributeValue = scxmlParser.getAttributeValue(namespace,
+				"version");
 		if (attributeValue == null) {
-			throw new ConfigurationException("The version attribute is mandatory.");
+			throw new ConfigurationException(
+					"The version attribute is mandatory.");
 		}
 		if ((auxFloat = parseFloat(attributeValue)) != -1) {
 			smm.setVersion(new BigDecimal(auxFloat));
@@ -847,7 +942,8 @@ public class XppStateMachineParser implements StateMachineParser {
 		return smm;
 	}
 
-	private float parseFloat(String attributeValue) throws ConfigurationException {
+	private float parseFloat(String attributeValue)
+			throws ConfigurationException {
 
 		float result = -1;
 
@@ -878,16 +974,15 @@ public class XppStateMachineParser implements StateMachineParser {
 		URI uri = URI.create("fsm://sessionId/sendEvent/eventName");
 
 		String schemeSpecificPart = uri.getSchemeSpecificPart();
-		System.out.println("schemeSpecificPart: "+schemeSpecificPart);
-		System.out.println("path: "+uri.getPath());
+		System.out.println("schemeSpecificPart: " + schemeSpecificPart);
+		System.out.println("path: " + uri.getPath());
 		String[] pathParts = uri.getPath().split("/");
-		System.out.println("action: "+pathParts[1]);
-		System.out.println("event: "+pathParts[2]);
-		System.out.println("host: "+uri.getHost());
-		System.out.println("authority: "+uri.getAuthority());
+		System.out.println("action: " + pathParts[1]);
+		System.out.println("event: " + pathParts[2]);
+		System.out.println("host: " + uri.getHost());
+		System.out.println("authority: " + uri.getAuthority());
 
-		
 		uri = URI.create("fsm:///sendEvent");
-		System.out.println("host2: "+uri.getHost());
+		System.out.println("host2: " + uri.getHost());
 	}
 }

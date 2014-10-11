@@ -23,6 +23,7 @@ import com.nosolojava.fsm.model.state.InitialState;
 import com.nosolojava.fsm.model.state.State;
 import com.nosolojava.fsm.model.transition.Transition;
 import com.nosolojava.fsm.parser.XppActionParser;
+import com.nosolojava.fsm.parser.exception.SCXMLParserException;
 import com.nosolojava.fsm.runtime.Context;
 import com.nosolojava.fsm.runtime.StateMachineEngine;
 import com.nosolojava.fsm.runtime.executable.externalcomm.Message;
@@ -36,14 +37,16 @@ public class TestXPPParser {
 
 	@Test(timeout=1000)
 	public void parseSimpleXML() throws XmlPullParserException, ConfigurationException, IOException,
-			InterruptedException, URISyntaxException {
+			InterruptedException, URISyntaxException, SCXMLParserException {
 
 		// init framework
 		StateMachineEngine engine = new BasicStateMachineEngine();
 		BasicStateMachineFramework.DEBUG.set(false);
 		engine.start();
 		Context ctx = engine.startFSMSession(null, new URI("classpath:simpleSM.xml"));
-
+//		Context ctx = engine.startFSMSession(null, new URI("http://nosolojava.com/simpleSM.xml"));
+//		Context ctx = engine.startFSMSession(null, new URI("file:///c:/Users/cverdes/workspace/eclipse-ws/scxml-java/scxml-java-implementation/src/test/resources/simpleSM.xml"));
+		
 		StateMachineModel smm = ctx.getModel();
 
 		// check initial
@@ -67,7 +70,7 @@ public class TestXPPParser {
 
 	@Test
 	public void parseCompoundXML() throws XmlPullParserException, ConfigurationException, IOException,
-			URISyntaxException, InterruptedException {
+			URISyntaxException, InterruptedException, SCXMLParserException {
 		// init sm
 		StateMachineEngine engine = new BasicStateMachineEngine();
 		engine.start();
@@ -108,7 +111,7 @@ public class TestXPPParser {
 
 	@Test(timeout = 50000)
 	public void testExecutables() throws XmlPullParserException, IOException, ConfigurationException,
-			URISyntaxException, InterruptedException {
+			URISyntaxException, InterruptedException, SCXMLParserException {
 		//custom action parsers
 		List<XppActionParser> actionParsers = new ArrayList<XppActionParser>();
 		BarrierActionParser barrierAction = new BarrierActionParser();

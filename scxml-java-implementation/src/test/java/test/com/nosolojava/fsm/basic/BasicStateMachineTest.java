@@ -25,6 +25,7 @@ import com.nosolojava.fsm.impl.runtime.basic.StateMachineUtils;
 import com.nosolojava.fsm.model.config.exception.ConfigurationException;
 import com.nosolojava.fsm.model.config.exception.ParallelSiblingTransactionException;
 import com.nosolojava.fsm.model.state.State;
+import com.nosolojava.fsm.parser.exception.SCXMLParserException;
 import com.nosolojava.fsm.runtime.Context;
 import com.nosolojava.fsm.runtime.Event;
 import com.nosolojava.fsm.runtime.EventType;
@@ -36,7 +37,7 @@ import com.nosolojava.fsm.runtime.executable.externalcomm.IOProcessor;
 public class BasicStateMachineTest {
 
 	@Test
-	public void testFindLCA() throws ConfigurationException, URISyntaxException, IOException, InterruptedException {
+	public void testFindLCA() throws ConfigurationException, URISyntaxException, IOException, InterruptedException, SCXMLParserException {
 		// create the next states a.b.c | a.b.d | e.f
 
 		BasicState root = BasicState.createRootState();
@@ -119,7 +120,7 @@ public class BasicStateMachineTest {
 
 	@Test
 	public void testParallelSiblingsInternalTransaction() throws ConfigurationException, IOException,
-			URISyntaxException, InterruptedException {
+			URISyntaxException, InterruptedException, SCXMLParserException {
 
 		BasicStateMachineEngine engine = new BasicStateMachineEngine();
 		engine.start();
@@ -131,7 +132,7 @@ public class BasicStateMachineTest {
 
 	@Test(expected = ParallelSiblingTransactionException.class)
 	public void testNoParallelSiblingsTransaction() throws ConfigurationException, IOException, URISyntaxException,
-			InterruptedException {
+			InterruptedException, SCXMLParserException {
 
 		BasicStateMachineEngine engine = new BasicStateMachineEngine();
 		engine.start();

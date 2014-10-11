@@ -11,6 +11,7 @@ import java.util.concurrent.TimeUnit;
 import com.nosolojava.fsm.model.config.exception.ConfigurationException;
 import com.nosolojava.fsm.model.externalcomm.Invoke;
 import com.nosolojava.fsm.parser.StateMachineParser;
+import com.nosolojava.fsm.parser.exception.SCXMLParserException;
 import com.nosolojava.fsm.runtime.executable.externalcomm.IOProcessor;
 import com.nosolojava.fsm.runtime.executable.externalcomm.InvokeHandler;
 
@@ -31,7 +32,7 @@ public interface StateMachineEngine {
 	 * @throws IOException
 	 * @throws ConfigurationException
 	 */
-	Context startFSMSession(URI fsmModelUri) throws ConfigurationException, IOException;
+	Context startFSMSession(URI fsmModelUri) throws ConfigurationException, IOException,SCXMLParserException;
 
 	/**
 	 * Used to start a SCXML session with a parent session.
@@ -43,7 +44,7 @@ public interface StateMachineEngine {
 	 * @return the current FSM config (after initialization)
 	 * @throws IOException
 	 */
-	Context startFSMSession(String parentSessionId, URI fsmModelUri) throws ConfigurationException, IOException;
+	Context startFSMSession(String parentSessionId, URI fsmModelUri) throws ConfigurationException, IOException,SCXMLParserException;
 
 	/**
 	 * Used to start a SCXML session when the session id is known. For example when an {@link Invoke} of type "scxml" is
@@ -63,7 +64,7 @@ public interface StateMachineEngine {
 	 */
 
 	Context startFSMSession(String sessionId, String parentSessionId, URI fsmModelUri,
-			Map<String, Serializable> initValues) throws ConfigurationException, IOException;
+			Map<String, Serializable> initValues) throws ConfigurationException, IOException,SCXMLParserException;
 
 	/**
 	 * Checks if there is an FSM session active with the indicated session id.
