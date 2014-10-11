@@ -71,7 +71,7 @@ Context childrenCtx= engine.startFSMSession(parentSessionId,uri);
 
 
 When you finish you can stop the engine waiting the current sessions to finish or just interrupt them:
-```
+```java
 //shutdown the engine and wait 50 milliseconds for the sessions to finish
 engine.shutdownAndWait(50, TimeUnit.MILLISECONDS);
 
