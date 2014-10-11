@@ -124,8 +124,8 @@ public class BasicStateMachineEngine implements StateMachineEngine {
 			throw new RuntimeException("Engine can't be started twice, create a new instance");
 		}
 
-		this.startStopLock.lock();
 		try {
+			this.startStopLock.lock();
 			if (this.isActive.compareAndSet(false, true)) {
 				this.dispatcherExecutor = Executors.newSingleThreadExecutor();
 				this.dispatcherExecutor.execute(new DispatchEventsTask());
@@ -144,8 +144,8 @@ public class BasicStateMachineEngine implements StateMachineEngine {
 		boolean result = false;
 
 		//if the engine is active --> set to inactive and start shutdown
-		this.startStopLock.lock();
 		try {
+			this.startStopLock.lock();
 			if (this.isActive.compareAndSet(true, false)) {
 				this.dispatcherExecutor.shutdown();
 			} else {
@@ -190,9 +190,9 @@ public class BasicStateMachineEngine implements StateMachineEngine {
 	public Context startFSMSession(String sessionId, String parentSessionId, URI fsmModelUri,
 			Map<String, Serializable> initValues) throws ConfigurationException, IOException, SCXMLParserException {
 
-		this.startStopLock.lock();
 		Context context;
 		try {
+			this.startStopLock.lock();
 			if (!this.isActive.get()) {
 				throw new RuntimeException(
 						"This engine has not been started or has been shutdown before, create a new instance.");
@@ -209,8 +209,8 @@ public class BasicStateMachineEngine implements StateMachineEngine {
 		context = this.contextFactory.createContext(sessionId, parentSessionId, model, this, initValues);
 
 		//save the session so events could arrive while initiating
-		this.startStopLock.lock();
 		try {
+			this.startStopLock.lock();
 			if (this.isActive.get()) {
 				this.scxmlSessionMap.put(context.getSessionId(), context);
 			} else {
@@ -226,8 +226,8 @@ public class BasicStateMachineEngine implements StateMachineEngine {
 		this.framework.initFSM(context);
 
 		// offer the session to runtime so it can process events
-		this.startStopLock.lock();
 		try {
+			this.startStopLock.lock();
 			if (this.isActive.get()) {
 				this.availableSessions.offer(context);
 			} else {
@@ -265,8 +265,8 @@ public class BasicStateMachineEngine implements StateMachineEngine {
 							Event event = availableContext.pollExternalEvent();
 							PushEventTask pushEventtask = new PushEventTask(event, availableContext);
 
-							sessionLock.lock();
 							try {
+								sessionLock.lock();
 								busySessionMap.put(availableContext.getSessionId(), availableContext);
 							} finally {
 								sessionLock.unlock();
@@ -307,8 +307,8 @@ public class BasicStateMachineEngine implements StateMachineEngine {
 			BasicStateMachineEngine.this.getStateMachineFramework().handleExternalEvent(event, context);
 
 			//lock to update maps (the session has to pass from busy to active or empty in an atomic way)
-			sessionLock.lock();
 			try {
+				sessionLock.lock();
 				//remove from busy map
 				BasicStateMachineEngine.this.busySessionMap.remove(context.getSessionId());
 
@@ -345,8 +345,8 @@ public class BasicStateMachineEngine implements StateMachineEngine {
 
 		if (this.scxmlSessionMap.containsKey(sessionId)) {
 			//remove from busy map
-			sessionLock.lock();
 			try {
+				sessionLock.lock();
 				Context context = this.scxmlSessionMap.get(sessionId);
 
 				//if is in empty map
