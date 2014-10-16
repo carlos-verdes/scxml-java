@@ -17,6 +17,15 @@ This module will be in a public repository, right now you should download and do
     mvn clean install
 ```
 
+Maven dependency:
+```xml
+<dependency>
+	<artifactId>scxml-java-implementation</artifactId>
+	<groupId>com.nosolojava.fsm</groupId>
+	<version>1.0.1-SNAPSHOT</version>
+</dependency>
+``
+	
  
 Then you can create in the classpath an SCXML resource like this (in the example simpleSM.xml):
 ```xml
