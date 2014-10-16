@@ -106,9 +106,11 @@ engine.forceShutdown();
 
 The communication between SCXML sessions with other sessions/applications is done with events (inputs) and messages (outputs), and are performed by I/O event processors. Each I/O processor is able to handle a diferent type of events/messages and transport mechanisms (for example the scxml-android module has I/O processors for intent events).
 
-So, and I/O processor will listen from external resources messages, try to search the target session and push the correspondent event to it. At the same time is able to receive a message from a SCXML session and send it to another system (which actually could be another SCXML session).
+So, the I/O processor will listen from external resources messages, try to search the target session and push the correspondent event to it. At the same time is able to receive a message from a SCXML session and send it to another system (which actually could be another SCXML session).
 
-Now get the previous example of a SM with two states, connected and disconnected... the event connect transitions from disconnected to connected, and once is connected a console message will appear:
+Now get the previous example of a SM with two states, connected and disconnected. 
+If an event "connect" is received on  disconnected the state machine transitions to connected state.
+Connected state shows a console message on enter.
 
 ```
 init-state:  disconnected
@@ -116,11 +118,25 @@ state-disconnected
   on-event: connect --> connected
 state-connected
   on-entry: 
-    send to console "connected"
+    send to console welcome message
 ```
 
 With the previous engine and session we could do something like:
+```java
+//create a user credentials
+Principal userCredentials= new Principal() {
+	@Override
+	public String getName() {
+		return "John";
+	}
+};
+//push a connect event
+engine.pushEvent(ctx.getSessionId(), new BasicEvent("connect", userCredentials));
+engine.pushEvent(ctx.getSessionId(), new BasicEvent("exit"));
 ```
 
-
+With next output:
+```
+> connected John
+```
 
