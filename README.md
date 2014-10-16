@@ -31,7 +31,7 @@ Maven dependency:
 ```
 	
  
- #How to start/stop a session
+#How to start/stop a session
  
 You  can create an SCXML resource like this (in the example simpleSM.xml):
 ```xml
