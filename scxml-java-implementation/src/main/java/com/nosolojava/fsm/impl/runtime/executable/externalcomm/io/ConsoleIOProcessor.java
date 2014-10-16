@@ -29,7 +29,8 @@ public class ConsoleIOProcessor implements IOProcessor {
 
 	@Override
 	public void sendMessage(Message message) {
-		if (message != null && String.class.isAssignableFrom(message.getClass())) {
+		if (message != null && message.getBody() != null
+				&& String.class.isAssignableFrom(message.getBody().getClass())) {
 			String messageText = (String) message.getBody();
 			if (messageText != null) {
 				System.out.println("> " + messageText);

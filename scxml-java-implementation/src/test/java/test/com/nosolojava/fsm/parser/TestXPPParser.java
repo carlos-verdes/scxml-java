@@ -30,6 +30,9 @@ import com.nosolojava.fsm.runtime.executable.externalcomm.Message;
 
 public class TestXPPParser {
 
+	private static final String CONNECTED_STATE = "connected-state";
+	private static final String DISCONNECTED_STATE = "disconnected-state";
+	private static final String MAIN_STATE = "main-state";
 	private static final String EVENT1 = "event1";
 	private static final String EVENT2 = "event2";
 	private static final String X_PARAM = "x";
@@ -54,18 +57,20 @@ public class TestXPPParser {
 
 		// check initial
 		InitialState initial = smm.getRootState().getInitialState();
-		Assert.assertEquals("init1", initial.getId());
 		Transition initialTransition = initial.getInitialTransition();
 		Assert.assertNotNull(initialTransition);
 		Assert.assertEquals(smm.getRootState(), initialTransition.getSourceState(ctx));
-		Assert.assertEquals("connected", initialTransition.getTargetState(ctx).getName());
+		Assert.assertEquals(MAIN_STATE, initialTransition.getTargetState(ctx).getName());
 
 		State state = smm.getRootState().getChildrens().get(0);
-		Assert.assertEquals("connected", state.getName());
+		Assert.assertEquals(MAIN_STATE, state.getName());
+		
+		state=state.getInitialState().getInitialTransition().getTargetState(ctx);
+		Assert.assertEquals(DISCONNECTED_STATE, state.getName());
 		Transition transition = state.getTransitions().get(0);
 		Assert.assertNotNull(transition);
 		Assert.assertEquals(state, transition.getSourceState(ctx));
-		Assert.assertEquals("disconnected", transition.getTargetState(ctx).getName());
+		Assert.assertEquals(CONNECTED_STATE, transition.getTargetState(ctx).getName());
 		Assert.assertFalse(transition.isInternal());
 
 		engine.shutdownAndWait(50, TimeUnit.MILLISECONDS);

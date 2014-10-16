@@ -260,9 +260,9 @@ public class BasicStateMachineTest {
 		String childrenSessionId = "session2";
 		Context context = engine.startFSMSession(parentSessionId, null, URI.create("classpath:invokeSM.xml"), null);
 		assertActiveStates(listener, new String[] { "initState" });
-		Assert.assertEquals(0, context.getDataByName("x"));
-		Assert.assertEquals(0, context.getDataByName("y"));
-		Assert.assertEquals(0, context.getDataByName("result"));
+		Assert.assertEquals(0, (int)context.getDataByName("x"));
+		Assert.assertEquals(0, (int)context.getDataByName("y"));
+		Assert.assertEquals(0, (int)context.getDataByName("result"));
 
 		//send event start --> invoke children session
 		assertEventActiveStates(new BasicEvent("start"), context, engine, listener, new String[] { "invokingState" },
@@ -271,26 +271,26 @@ public class BasicStateMachineTest {
 		//check init of children session
 		assertActiveStates(listener, new String[] { "calculatorInitState" }, childrenSessionId);
 		Context childrenContext = engine.getSession(childrenSessionId);
-		Assert.assertEquals(0, childrenContext.getDataByName("result"));
+		Assert.assertEquals(0, (int)childrenContext.getDataByName("result"));
 
 		//init x and y from parent
 		assertEventActiveStates(new BasicEvent("enterX", 1), context, engine, listener,
 				new String[] { "invokingState" }, parentSessionId);
-		Assert.assertEquals(1, context.getDataByName("x"));
+		Assert.assertEquals(1, (int)context.getDataByName("x"));
 
 		assertEventActiveStates(new BasicEvent("enterY", 3), context, engine, listener,
 				new String[] { "invokingState" }, parentSessionId);
-		Assert.assertEquals(3, context.getDataByName("y"));
+		Assert.assertEquals(3, (int)context.getDataByName("y"));
 
 		//send event add
 		assertEventActiveStates(new BasicEvent("sumXY"), context, engine, listener, new String[] { "invokingState" },
 				parentSessionId);
-		Assert.assertEquals(0, context.getDataByName("result"));
+		Assert.assertEquals(0, (int)context.getDataByName("result"));
 		assertActiveStates(listener, new String[] { "invokingState" }, parentSessionId);
-		Assert.assertEquals(4, context.getDataByName("result"));
+		Assert.assertEquals(4, (int)context.getDataByName("result"));
 
 		assertActiveStates(listener, new String[] { "finalState" }, parentSessionId);
-		Assert.assertEquals(3, context.getDataByName("lastNumber"));
+		Assert.assertEquals(3, (int)context.getDataByName("lastNumber"));
 
 		
 		Assert.assertEquals("changedValue", context.getDataByExpression("invokeValideVar"));
@@ -309,11 +309,11 @@ public class BasicStateMachineTest {
 
 		Context context = engine.startFSMSession(URI.create("classpath:doneDataSM.xml"));
 		assertActiveStates(listener, new String[] { "parallelState", "s", "s1", "t", "t1", "u", "u1" });
-		Assert.assertEquals(0, context.getDataByExpression("x"));
+		Assert.assertEquals(0, (int)context.getDataByExpression("x"));
 
 		assertEventActiveStates(new BasicEvent("e"), context, engine, listener, new String[] { "parallelState", "s",
 				"s2", "t", "t2", "u", "u2" }, context.getSessionId());
-		Assert.assertEquals(4, context.getDataByExpression("x"));
+		Assert.assertEquals(4, (int)context.getDataByExpression("x"));
 	}
 
 	protected void assertEventActiveStates(Event event, Context context, StateMachineEngine engine,

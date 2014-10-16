@@ -17,6 +17,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -43,7 +44,9 @@ import com.nosolojava.fsm.runtime.executable.externalcomm.InvokeHandler;
 
 public class BasicStateMachineEngine implements StateMachineEngine {
 	private final Logger logger = Logger.getLogger(this.getClass().getName());
+	public static AtomicInteger CHECK_AVAILABLE_SESSIONS_PERIOD_IN_MILLIS = new AtomicInteger(5000);
 
+	
 	private final ConcurrentMap<String, IOProcessor> ioProcessorMap = new ConcurrentHashMap<String, IOProcessor>();
 
 	private ConcurrentMap<String, Context> scxmlSessionMap = new ConcurrentHashMap<String, Context>();
@@ -245,6 +248,7 @@ public class BasicStateMachineEngine implements StateMachineEngine {
 	/* this class runs in a single thread !! */
 	class DispatchEventsTask implements Runnable {
 
+
 		@Override
 		public void run() {
 
@@ -254,7 +258,7 @@ public class BasicStateMachineEngine implements StateMachineEngine {
 				while (engineInstance.isActive.get() || !engineInstance.scxmlSessionMap.isEmpty()) {
 
 					//get next available context, if timeout then check end condition
-					Context availableContext = engineInstance.availableSessions.poll(5000, TimeUnit.MILLISECONDS);
+					Context availableContext = engineInstance.availableSessions.poll(CHECK_AVAILABLE_SESSIONS_PERIOD_IN_MILLIS.get(), TimeUnit.MILLISECONDS);
 
 					//if there is any available context
 					if (availableContext != null) {
@@ -273,7 +277,9 @@ public class BasicStateMachineEngine implements StateMachineEngine {
 							}
 
 							//and execute the macrostep
-							engineInstance.contextEventsExecutor.execute(pushEventtask);
+							if(!engineInstance.contextEventsExecutor.isShutdown()){
+								engineInstance.contextEventsExecutor.execute(pushEventtask);
+							}
 
 						} else {
 							// returns to available queue (it will has the lest priority)
