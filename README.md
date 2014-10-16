@@ -1,6 +1,8 @@
 scxml-java
 ==========
 
+#Introduction
+
 Java library that implements SCXML standard (http://www.w3.org/TR/scxml).
 
 This implementation has only dependency with Apache JEXL to evaluate context expressions so it's easier to use with antoher frameworks like Android.
@@ -8,6 +10,8 @@ This implementation has only dependency with Apache JEXL to evaluate context exp
 Android lib has been publised to use this lib in Android apps.
 You can clone from https://github.com/nosolojava/scxml-android.git
 
+
+#How to include in your project
 
 This module will be in a public repository, right now you should download and do a clean-install with Maven:
 
@@ -24,33 +28,42 @@ Maven dependency:
 	<groupId>com.nosolojava.fsm</groupId>
 	<version>1.0.1-SNAPSHOT</version>
 </dependency>
-``
+```
 	
  
-Then you can create in the classpath an SCXML resource like this (in the example simpleSM.xml):
+ #How to start/stop a session
+ 
+You  can create an SCXML resource like this (in the example simpleSM.xml):
 ```xml
-<scxml name="basicStates" version="1.0" android:version="2" xmlns="http://www.w3.org/2005/07/scxml" xmlns:android="http://com.nosolojava.schemas.android/scxml">
+<scxml name="basicStates" version="1.0"
+	xmlns="http://www.w3.org/2005/07/scxml"
+	initial="main-state">
 	<datamodel>
 		<data id="salute" expr="'hello world'" />
 		<data id="state" expr="'none'" />
+		<data id="user" expr="null" />
 	</datamodel>
-	<initial id="init1">
-		<transition target="connected" />
-	</initial>
-	<state id="connected">
-		<onentry>
-			<assign location="salute" expr="'connected'" />
-		</onentry>
-		<transition event="connect" target="disconnected">
-		</transition>
+	<state id="main-state" initial="disconnected">
+		<state id="connected-state">
+			<onentry>
+				<assign location="salute" expr="'connected'" />
+				<send type="console" eventexpr="salute+' '+user" />
+			</onentry>
+			<transition event="disconnect" target="disconnected-state">
+			</transition>
+		</state>
+		<state id="disconnected-state">
+			<onentry>
+				<assign location="salute" expr="'disconnected'" />
+			</onentry>
+			<transition event="connect" target="connected-state">
+				<assign location="user" expr="_event.data" />
+			</transition>
+		</state>
+		<transition event="exit" target="off-state" />
 	</state>
-	<state id="disconnected">
-		<onentry>
-			<assign location="salute" expr="'disconnected'" />
-		</onentry>
-		<transition event="disconnect" target="connected">
-		</transition>
-    </state>
+	<final id="off-state">
+	</final>
 </scxml>
 ```
 
@@ -88,3 +101,26 @@ engine.shutdownAndWait(50, TimeUnit.MILLISECONDS);
 //force shutdown (no wait)
 engine.forceShutdown();
 ```
+
+#How to communicate with a session
+
+The communication between SCXML sessions with other sessions/applications is done with events (inputs) and messages (outputs), and are performed by I/O event processors. Each I/O processor is able to handle a diferent type of events/messages and transport mechanisms (for example the scxml-android module has I/O processors for intent events).
+
+So, and I/O processor will listen from external resources messages, try to search the target session and push the correspondent event to it. At the same time is able to receive a message from a SCXML session and send it to another system (which actually could be another SCXML session).
+
+Now get the previous example of a SM with two states, connected and disconnected... the event connect transitions from disconnected to connected, and once is connected a console message will appear:
+
+```
+init-state:  disconnected
+state-disconnected
+  on-event: connect --> connected
+state-connected
+  on-entry: 
+    send to console "connected"
+```
+
+With the previous engine and session we could do something like:
+```
+
+
+
