@@ -1,6 +1,5 @@
 package com.nosolojava.fsm.runtime.executable.externalcomm;
 
-import java.io.Serializable;
 import java.net.URI;
 
 import com.nosolojava.fsm.model.externalcomm.Send;

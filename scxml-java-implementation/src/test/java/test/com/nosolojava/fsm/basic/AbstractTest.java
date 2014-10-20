@@ -22,7 +22,10 @@ public abstract class AbstractTest {
 	StateMachineEngine engine;
 	Context ctx;
 
-
+	private long timeoutBeforeShutdown=100;
+	private ContextTask afterEndTask=null;
+	
+	
 	public abstract String getFSMUri();
 	
 	@Before
@@ -42,9 +45,83 @@ public abstract class AbstractTest {
 	
 	@After
 	public void shutdownEngine() throws InterruptedException{
-		engine.shutdownAndWait(100, TimeUnit.MILLISECONDS);
-		Logger.getLogger(this.getClass().getCanonicalName()).log(Level.INFO,"Finish test ");
+		boolean shutdownInTime=engine.shutdownAndWait(getTimeout(), TimeUnit.MILLISECONDS);
+		Logger.getLogger(this.getClass().getCanonicalName()).log(Level.INFO,"Shutdown engine in time? {0}",new Object[]{shutdownInTime});
+		afterShutdown(shutdownInTime);
+	}
+
+	protected void afterShutdown(boolean shutdownInTime){
+		Logger.getLogger(this.getClass().getCanonicalName()).log(Level.INFO,"After shutdown");
+		ContextTask task;
+		if((task=getAfterEndTask())!=null){
+			task.setContext(this.ctx);
+			task.setEngine(this.engine);
+			task.setHasFinishedOnTime(shutdownInTime);
+			task.run();
+		}
 	}
 	
+	public static abstract class ContextTask implements Runnable{
+
+		private Context context;
+		private StateMachineEngine engine;
+		private boolean hasFinishedOnTime;
+		
+		
+		public boolean isHasFinishedOnTime() {
+			return hasFinishedOnTime;
+		}
+
+		public void setHasFinishedOnTime(boolean hasFinishedOnTime) {
+			this.hasFinishedOnTime = hasFinishedOnTime;
+		}
+
+		public ContextTask() {
+			super();
+		}
+
+		public abstract void run (Context context, StateMachineEngine engine,boolean hasFinishedOnTime);
+		
+		@Override
+		public void run() {
+			run(this.context,this.engine,this.hasFinishedOnTime);
+		}
+
+		public Context getContext() {
+			return context;
+		}
+
+		public void setContext(Context context) {
+			this.context = context;
+		}
+
+		public StateMachineEngine getEngine() {
+			return engine;
+		}
+
+		public void setEngine(StateMachineEngine engine) {
+			this.engine = engine;
+		}
+		
+		
+		
+	} 
+	
+	
+	public long getTimeout() {
+		return timeoutBeforeShutdown;
+	}
+
+	public void setTimeout(long timeout) {
+		this.timeoutBeforeShutdown = timeout;
+	}
+
+	public ContextTask getAfterEndTask() {
+		return afterEndTask;
+	}
+
+	public void setAfterEndTask(ContextTask afterEndTask) {
+		this.afterEndTask = afterEndTask;
+	}
 
 }
