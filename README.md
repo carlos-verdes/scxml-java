@@ -174,7 +174,7 @@ Example:
 	<state id="calculating-state">
 		<transition event="operation.result.event" target="preparingInput-state">
 			<!-- stores the result in the context and wait for next operation -->
-			<assign location="result" expr="_event.data" />
+			<assign location="result" expr="_event.data.result" />
 		</transition>
 	</state>
 </state>
@@ -187,9 +187,9 @@ Finally the called session could answer to the parent session with the special i
 	<assign location="lastOperator" expr="_event.data.operator" />
 	<assign location="lastOperands" expr="_event.data.operands" />
 	<!-- execute some custom action -->
-	<custom-actions:calculate operands="lastOperands" operator="lastOperator" resultLocation="lastResult" />
+	<custom-actions:calculate operands="lastOperands" operator="lastOperator" resultLocation="result" />
 	<!-- send the result back to the parent -->
-	<send target="#_parent" event="operation.result.event" namelist="lastResult" />
+	<send target="#_parent" event="operation.result.event" namelist="result" />
 </transition>
 ```
 
