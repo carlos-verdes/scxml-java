@@ -12,7 +12,7 @@
 		<transition event="start" target="invokingState" />
 	</state>
 	<state id="invokingState">
-		<!-- invoke another scxml session -->
+		<!-- invoke another scxml session and give id session2 -->
 		<invoke type="scxml" id="session2" autoforward="false" srcexpr="'classpath:calculatorSM.xml'" namelist="result invokeValideVar invokeInvalidVar">
 			<finalize />
 		</invoke>

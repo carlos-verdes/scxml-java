@@ -1,4 +1,4 @@
-package test.com.nosolojava.fsm.basic;
+package test.com.nosolojava.fsm.basic.manual;
 
 import java.io.IOException;
 import java.net.URI;
