@@ -67,7 +67,7 @@ You  can create an SCXML resource like this (in the example simpleSM.xml):
 </scxml>
 ```
 
-And then you can start SM session like this:
+And then you can start SM session with the next code:
 ```java
 // set DEBUG true|false
 BasicStateMachineFramework.DEBUG.set(true);
@@ -104,39 +104,50 @@ engine.forceShutdown();
 
 #How to communicate with a session
 
+
 The communication between SCXML sessions with other sessions/applications is done with events (inputs) and messages (outputs), and are performed by I/O event processors. Each I/O processor is able to handle a diferent type of events/messages and transport mechanisms (for example the scxml-android module has I/O processors for intent events).
 
-So, the I/O processor will listen from external resources messages, try to search the target session and push the correspondent event to it. At the same time is able to receive a message from a SCXML session and send it to another system (which actually could be another SCXML session).
+To send events to a session from your IO proccesor you could offer a message to a context or send to the engine with the session id.
 
-Now get the previous example of a SM with two states, connected and disconnected. 
-If an event "connect" is received on  disconnected the state machine transitions to connected state.
-Connected state shows a console message on enter.
-
-```
-init-state:  disconnected
-state-disconnected
-  on-event: connect --> connected
-state-connected
-  on-entry: 
-    send to console welcome message
-```
-
-With the previous engine and session we could do something like:
+Some examples using the context
 ```java
-//create a user credentials
-Principal userCredentials= new Principal() {
-	@Override
-	public String getName() {
-		return "John";
-	}
-};
-//push a connect event
-engine.pushEvent(ctx.getSessionId(), new BasicEvent("connect", userCredentials));
-engine.pushEvent(ctx.getSessionId(), new BasicEvent("exit"));
+
+Context ctx= ...;
+
+//create an event (name and data) and offer to external queue
+Event event = new BasicEvent("connect.event", new SomeClass());
+ctx.offerExternalEvent(event);
+
+//use some helper methods
+ctx.offerExternalEvent("connect.event");
+ctx.offerExternalEvent("connect.event",new SomeClass());
+
 ```
 
-With next output:
+But sometimes you just have the sessionId or a session URI (the IO processors should send with the messages a response URI so the called system can answer to the fsm session, but the responsability to extract the session ID is for the IO processor).
+
+Some examples with the engine:
+```java
+StateMachineEngine engine=...;
+Context ctx=...;
+Principal userPrincipal=...;
+
+engine.pushEvent(ctx.getSessionId(), new BasicEvent("connect.event", userPrincipal));
+engine.pushEvent(sessionId, new BasicEvent("connect.event", userPrincipal));
+
 ```
-> connected John
-```
+
+Example of IO processor implementation
+```java
+public void onNewEvent(URI destinationSession,String eventName,Object data){
+	URI sessionURI=...;
+
+	String sessionId= extractSessionFromUri(sessionURI);
+	engine.pushEvent(sessionId,new BasicEvent(eventName,data));
+
+}
+
+
+
+
 
