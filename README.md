@@ -107,6 +107,7 @@ engine.forceShutdown();
 
 The communication between SCXML sessions with other sessions/applications is done with events (inputs) and messages (outputs), and are performed by I/O event processors. Each I/O processor is able to handle a diferent type of events/messages and transport mechanisms (for example the scxml-android module has I/O processors for intent events).
 
+##Send an event to a session
 To send events to a session from your IO proccesor you could offer a message to a context or send to the engine with the session id.
 
 Some examples using the context
@@ -146,8 +147,50 @@ public void onNewEvent(URI destinationSession,String eventName,Object data){
 	engine.pushEvent(sessionId,new BasicEvent(eventName,data));
 
 }
+```
 
+##Send events between sessions
 
+SCXML allows to invoke a new SCXML session so it's possible to send messages between them.
 
+To invoke a new session the <invoke element should be used with type="scxml" and a valid source uri.
+Any valir URL could be used and an special scheme classpath://{classname} has been added to the engine.
+
+Example:
+```xml
+...
+<state id="invoking-calculator-state">
+	<!-- invoke another session with id session2 -->
+	<invoke type="scxml" id="session2" autoforward="false" srcexpr="'classpath:calculatorSM.xml'" namelist="result" />
+	<!-- state waiting user operation -->
+	<state id="preparingInput-state">
+		<!-- if a new operation event arrives -->
+		<transition event="operation.event" target="calculating-state">
+			<!-- send the new operation to the invoked session2 using the fragment identifier of the uri -->
+			<send type="scxml" targetexpr="'#session2'" event="operation.event">
+		</transition>
+	</state>
+	<!-- state waiting calculator result -->
+	<state id="calculating-state">
+		<transition event="operation.result.event" target="preparingInput-state">
+			<!-- stores the result in the context and wait for next operation -->
+			<assign location="result" expr="_event.data" />
+		</transition>
+	</state>
+</state>
+```
+
+Finally the called session could answer to the parent session with the special id _parent:
+```xml
+<transition event="operation.event" type="internal">
+	<!-- assign some local variables -->
+	<assign location="lastOperator" expr="_event.data.operator" />
+	<assign location="lastOperands" expr="_event.data.operands" />
+	<!-- execute some custom action -->
+	<custom-actions:calculate operands="lastOperands" operator="lastOperator" resultLocation="lastResult" />
+	<!-- send the result back to the parent -->
+	<send target="#_parent" event="operation.result.event" namelist="lastResult" />
+</transition>
+```
 
 
