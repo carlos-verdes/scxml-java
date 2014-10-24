@@ -31,91 +31,106 @@ https://github.com/nosolojava/scxml-android.git
 
 This module will be in a public repository, right now you should download and do a clean-install with Maven:
 
-```
-    git clone https://github.com/nosolojava/scxml-java.git
-    cd scxml-java
-    mvn clean install
-```
+
+	git clone https://github.com/nosolojava/scxml-java.git
+	cd scxml-java
+	mvn clean install
+
 
 Maven dependency:
+
 ```xml
-<dependency>
-	<artifactId>scxml-java-implementation</artifactId>
-	<groupId>com.nosolojava.fsm</groupId>
-	<version>1.0.1-SNAPSHOT</version>
-</dependency>
+
+	<dependency>
+		<artifactId>scxml-java-implementation</artifactId>
+		<groupId>com.nosolojava.fsm</groupId>
+		<version>1.0.1-SNAPSHOT</version>
+	</dependency>
+	
 ```
 	
  
 #How to start/stop a session
+
+You application could have different FSM sessions depending on how many behaviors you want to model. Each session will have his associated SCXML resource describing the different states, data model, actions and transitions. 
+We call "the context" to the current configuration of a session in a concrete moment (which states are active, what information is loaded in the model, etc.). There is an StateMachineEngine which is the responsible to parse the SCXML resource and start a new session (creating a Context instance). One SCXML session can send messages to another SCXML session or even start it if needed (invoking a new SCXML session). This is handful when you have a FSM utility that you want to use in different applications. An SCXML session ends when all the active states are a special "final" state.
  
-You  can create an SCXML resource like this (in the example simpleSM.xml):
+You  can create an SCXML resource like the next example and save it in the classpath, on your server, or any valid URL location.
+
+Example of SCXML resource:
+
 ```xml
-<scxml name="basicStates" version="1.0"
-	xmlns="http://www.w3.org/2005/07/scxml"
-	initial="main-state">
-	<datamodel>
-		<data id="salute" expr="'hello world'" />
-		<data id="state" expr="'none'" />
-		<data id="user" expr="null" />
-	</datamodel>
-	<state id="main-state" initial="disconnected">
-		<state id="connected-state">
-			<onentry>
-				<assign location="salute" expr="'connected'" />
-				<send type="console" eventexpr="salute+' '+user" />
-			</onentry>
-			<transition event="disconnect" target="disconnected-state">
-			</transition>
+
+	<scxml name="basicStates" version="1.0"
+		xmlns="http://www.w3.org/2005/07/scxml"
+		initial="main-state">
+		<datamodel>
+			<data id="salute" expr="'hello world'" />
+			<data id="user" expr="null" />
+		</datamodel>
+		<state id="main-state" initial="disconnected">
+			<state id="connected-state">
+				<onentry>
+					<assign location="salute" expr="'connected'" />
+					<send type="console" eventexpr="salute+' '+user" />
+				</onentry>
+				<transition event="disconnect" target="disconnected-state">
+				</transition>
+			</state>
+			<state id="disconnected-state">
+				<onentry>
+					<assign location="salute" expr="'disconnected'" />
+				</onentry>
+				<transition event="connect" target="connected-state">
+					<assign location="user" expr="_event.data" />
+				</transition>
+			</state>
+			<transition event="exit" target="off-state" />
 		</state>
-		<state id="disconnected-state">
-			<onentry>
-				<assign location="salute" expr="'disconnected'" />
-			</onentry>
-			<transition event="connect" target="connected-state">
-				<assign location="user" expr="_event.data" />
-			</transition>
-		</state>
-		<transition event="exit" target="off-state" />
-	</state>
-	<final id="off-state">
-	</final>
-</scxml>
+		<final id="off-state">
+		</final>
+	</scxml>
+	
 ```
 
 And then you can start SM session with the next code:
+
 ```java
-// set DEBUG true|false
-BasicStateMachineFramework.DEBUG.set(true);
-// init engine
-StateMachineEngine engine = new BasicStateMachineEngine();
-engine.start();
+
+	// set DEBUG true|false
+	BasicStateMachineFramework.DEBUG.set(true);
+	// init engine
+	StateMachineEngine engine = new BasicStateMachineEngine();
+	engine.start();
+		
+	// start from classpath uri
+	URI uri=new URI("classpath:simpleSM.xml");
+	// ... or start from file uri
+	URI uri= new URI("file:///c:/scxml-java/simpleSM.xml");
+	// ... or start from http uri
+	URI uri= new URI("http://nosolojava.com/simpleSM.xml");
 	
-// start from classpath uri
-URI uri=new URI("classpath:simpleSM.xml");
-// ... or start from file uri
-URI uri= new URI("file:///c:/scxml-java/simpleSM.xml");
-// ... or start from http uri
-URI uri= new URI("http://nosolojava.com/simpleSM.xml");
-
-//start normal session
-Context ctx = engine.startFSMSession(uri);
-
-//start a children session (parentSessionId should exists in the engine)
-Context childrenCtx= engine.startFSMSession(parentSessionId,uri);
+	//start normal session
+	Context ctx = engine.startFSMSession(uri);
+	
+	//start a children session (parentSessionId should exists in the engine)
+	Context childrenCtx= engine.startFSMSession(parentSessionId,uri);
 
 
 ```
 
 
 When you finish you can stop the engine waiting the current sessions to finish or just interrupt them:
+
 ```java
-//shutdown the engine and wait 50 milliseconds for the sessions to finish
-engine.shutdownAndWait(50, TimeUnit.MILLISECONDS);
 
-
-//force shutdown (no wait)
-engine.forceShutdown();
+	//shutdown the engine and wait 50 milliseconds for the sessions to finish
+	engine.shutdownAndWait(50, TimeUnit.MILLISECONDS);
+	
+	
+	//force shutdown (no wait)
+	engine.forceShutdown();
+	
 ```
 
 #Context and data
