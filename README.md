@@ -5,10 +5,26 @@ scxml-java
 
 Java library that implements SCXML standard (http://www.w3.org/TR/scxml).
 
-This implementation has only dependency with Apache JEXL to evaluate context expressions so it's easier to use with antoher frameworks like Android.
 
-Android lib has been publised to use this lib in Android apps.
-You can clone from https://github.com/nosolojava/scxml-android.git
+There is already an Apache implementation but the problem is that this library has a lot of dependencies that are really not needed and makes the integration with Android framework really hard. This was my original motivation when I started this project, to develop an SCXML lib so I can create a finite state machine Android framework. This implementation has only a dependency with Apache JEXL to evaluate context expressions so it's easier to integrate in any Java project.
+
+State machine pattern is perfect for applications when different scenarios require different behavior. A good example are mobile applications where different states like "full/low battery", "connected/disconnected to a network", "authenticated/unauthenticated user status", etc. should change user interfaces or background service behavior (things like show login/disconnect button, blur screen on disconnected, don't download huge files if not under WIFI, slow frequency updates on low battery, etc.).  
+
+The advantage of FSM (Finite State Machine) oriented design is that you don't need to create lots of nested if/then/else blocks with horrible boolean flags to control the behavior of your application, instead, your system has one/many active states which react to events in a different way. This events target transitions (or not) which could execute actions (or not). Also when a state is entered or exited some action could be executed. 
+
+A good example could be a chat application with two states like awake/silent. If the state is "awake" when a new event "user.message" arrives a transition will be triggered executing actions like "vibrate twice" or "show notification". In the other hand, if the same event arrives on "silent" state, a transition will execute the action "save notification" with no user notification at all. 
+
+When the user wants to "awake" the application (for example an event "switch on screen" arrives), then there would be a transition from "silent" state to "awake" state and in the "onentry" of "awake" state all the saved notifications are showed to the user (notifications that were saved in the FSM context).
+
+To finish, we could improve our chat application with two new states "low/full battery", being full battery the parent of previous states. On low battery the application doesn't handle any event and when a transition to full battery is done, the application can send a notification to the server to receive all the pending messages. To include this new feature in a FSM is really simple and doesn't affect previous implementation (just include previous states as childrens of a full battery state), and... because this is an XML implementation you could update your transitions/actions/states online just updating the FSM XML, and all of this with no software update at all!! Isn't that interesting?
+
+One workmate always says "never (use) if my friend"... and the truth is that once you understand and change your way of thinking to FSM you can't see anymore code that implements behavior with if/then/else. I hope I can transmit this to you and start a nice community of FSM developers. 
+
+
+The other library (the android FSM framework), has features like show/hide views depending on state, send events to FSM when "onclick" event occurs or bind view components with fsm data with only a couple of attributes on your Android xml view layout (for example bind a TextView value with a FSM datamodel attribute, send a "login" event when a button onclick is triggered or show a ProgressBat only when state "loading" is active).
+
+More information about Android FSM framework on: 
+https://github.com/nosolojava/scxml-android.git
 
 
 #How to include in your project
@@ -101,6 +117,11 @@ engine.shutdownAndWait(50, TimeUnit.MILLISECONDS);
 //force shutdown (no wait)
 engine.forceShutdown();
 ```
+
+#Context and data
+
+
+
 
 #How to communicate with a session
 
