@@ -667,6 +667,11 @@ public class BasicStateMachineFramework implements StateMachineFramework {
 				logFine("--> on enter: " + state);
 			}
 
+			// add datamodel to context
+			if(state.getDataModel()!=null){
+				context.loadDataModel(state.getDataModel());
+			}
+			
 			// add to states to invoke
 			context.addStateToInvoke(state);
 
@@ -738,6 +743,12 @@ public class BasicStateMachineFramework implements StateMachineFramework {
 
 			cancelInvokes(context, state);
 			context.removeActiveState(state);
+			
+			//remove datamodel
+			if(state.getDataModel()!=null){
+				context.removeDatamodel(state.getDataModel());
+			}
+
 		}
 		if (DEBUG.get()) {
 			logFine("------------------------------------");

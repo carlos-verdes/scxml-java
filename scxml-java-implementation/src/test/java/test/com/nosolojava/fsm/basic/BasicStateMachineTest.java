@@ -294,7 +294,7 @@ public class BasicStateMachineTest {
 
 		
 		Assert.assertEquals("changedValue", context.getDataByExpression("invokeValideVar"));
-		Assert.assertEquals("initialValue", context.getDataByExpression("invokeInvalidVar"));
+		Assert.assertEquals(null, context.getDataByExpression("invokeInvalidVar"));
 	}
 
 	@Test

@@ -7,6 +7,7 @@ import java.util.Set;
 import java.util.SortedSet;
 
 import com.nosolojava.fsm.model.StateMachineModel;
+import com.nosolojava.fsm.model.datamodel.DataModel;
 import com.nosolojava.fsm.model.datamodel.URLDataHandler;
 import com.nosolojava.fsm.model.state.State;
 import com.nosolojava.fsm.runtime.executable.externalcomm.IOProcessor;
@@ -202,4 +203,8 @@ public interface Context {
 	void executeScript(String code);
 
 	void executeScript(URL codeUri) throws IOException;
+
+	void loadDataModel(DataModel dataModel);
+
+	void removeDatamodel(DataModel dataModel);
 }

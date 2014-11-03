@@ -115,12 +115,15 @@ public class JexlFSMContext implements Context {
 		checkRepeteadId(statename);
 		this.states.put(statename, rootState);
 
-		// load datamodel
-		DataModel dm = rootState.getDataModel();
-		if (dm != null) {
-			loadDataModelInContext(dm);
+		//check and load datamodel
+		if(rootState.getDataModel()!=null){
+			for(Data data:rootState.getDataModel().getDataList()){
+				checkRepeteadId(data.getId());
+				registerData(data);
+			}
 		}
 
+		
 		// override root state data
 		if (initValues != null && initValues.size() > 0) {
 			for (Entry<String, Serializable> entry : initValues.entrySet()) {
@@ -141,11 +144,12 @@ public class JexlFSMContext implements Context {
 		String statename = state.getName();
 		checkRepeteadId(statename);
 		this.states.put(statename, state);
-
-		// load datamodel
-		DataModel dm = state.getDataModel();
-		if (dm != null) {
-			loadDataModelInContext(dm);
+		
+		//check datamodel
+		if(state.getDataModel()!=null){
+			for(Data data:state.getDataModel().getDataList()){
+				checkRepeteadId(data.getId());
+			}
 		}
 
 		// check recursive
@@ -186,20 +190,28 @@ public class JexlFSMContext implements Context {
 		this.dataHandlers.put(handler.getProtocol(), handler);
 	}
 
-	private void loadDataModelInContext(DataModel dataModel)
-			throws ConfigurationException {
+	@Override
+	public void loadDataModel(DataModel dataModel)
+			 {
 		// for each data in the model
 		for (Data data : dataModel.getDataList()) {
 			// register an immutable data in the context
 			registerData(data);
 		}
 	}
+	
+	@Override
+	public void removeDatamodel(DataModel dataModel){
+		
+		for(Data data:dataModel.getDataList()){
+			runtimeContext.set(data.getId(),null);
+		}
+		
+	}
 
-	public void registerData(Data data) throws ConfigurationException {
+	private void registerData(Data data) {
 
 		String id = data.getId();
-		checkRepeteadId(id);
-
 		runtimeContext.set(id, data.evaluateData(this));
 	}
 

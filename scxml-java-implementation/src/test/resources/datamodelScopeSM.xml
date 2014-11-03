@@ -1,0 +1,40 @@
+<scxml name="basicStates" version="1.0"
+	xmlns="http://www.w3.org/2005/07/scxml" 
+	initial="state-with-no-var"
+	xmlns:assert="http://nosolojava.com/customActions/assert">
+	<datamodel>
+		<data id="name" expr="'John'" />
+	</datamodel>
+	<state id="state-with-no-var">
+		<onentry>
+		    <assert:assertEquals expectedExpr="'John'" currentExpr="name" />
+		    <assert:assertNull expr="surname" />
+		    <assert:assertNull expr="somePrivate" />
+		</onentry>
+		<transition event="next" target="state-with-var-name-john" />
+	</state>
+	<state id="state-with-var-name-john">
+		<datamodel>
+			<data id="surname" expr="'Taylor'" />
+		</datamodel>
+		<onentry>
+		    <assert:assertEquals expectedExpr="'John'" currentExpr="name" />
+		    <assert:assertEquals expectedExpr="'Taylor'" currentExpr="surname" />
+		    <assert:assertNull expr="somePrivate" />
+		</onentry>
+		<transition event="next" target="state-with-private-var" />
+	</state>
+	<state id="state-with-private-var">
+		<datamodel>
+			<data id="somePrivate" expr="'privateVal'" />
+		</datamodel>
+		<onentry>
+		    <assert:assertEquals expectedExpr="'John'" currentExpr="name" />
+		    <assert:assertEquals expectedExpr="null" currentExpr="surname" />
+		    <assert:assertEquals expectedExpr="'privateVal'" currentExpr="somePrivate" />
+		    		</onentry>
+		<transition event="next" target="end-state" />
+	</state>
+	<final id="end-state">
+	</final>
+</scxml>
