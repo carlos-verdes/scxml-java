@@ -1,4 +1,6 @@
-<scxml name="invoke" version="1.0" xmlns="http://www.w3.org/2005/07/scxml">
+<scxml name="invoke" version="1.0" 
+    xmlns="http://www.w3.org/2005/07/scxml"
+    xmlns:assert="http://nosolojava.com/customActions/assert">
 	<datamodel>
 		<data id="result" />
 		<data id="lastNumber" />

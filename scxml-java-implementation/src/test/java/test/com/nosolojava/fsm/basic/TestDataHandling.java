@@ -57,10 +57,7 @@ public class TestDataHandling {
 			URISyntaxException, IOException, InterruptedException,
 			SCXMLParserException {
 
-		BasicState root = BasicState.createRootState();
-		StateMachineModel model = new BasicStateMachineModel(root);
-
-		Context ctx = new JexlFSMContext("sessionId", null, model, null, null);
+		Context ctx= UtilsForTestFSM.createBasicContext();
 		
 		URL textFileUrl = ClassLoader.getSystemClassLoader().getResource("someJSONtest.txt");
 		

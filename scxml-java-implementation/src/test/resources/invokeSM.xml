@@ -1,4 +1,6 @@
-<scxml name="invoke" version="1.0" android:version="2" xmlns="http://www.w3.org/2005/07/scxml" xmlns:android="http://com.nosolojava.schemas.android/scxml">
+<scxml name="invoke" version="1.0"
+    xmlns="http://www.w3.org/2005/07/scxml" 
+    xmlns:assert="http://nosolojava.com/customActions/assert">
 	<datamodel>
 		<data id="x" expr="0" />
 		<data id="y" expr="0" />
@@ -10,6 +12,11 @@
 	</datamodel>
 	<state id="initState">
 		<transition event="start" target="invokingState" />
+		<onentry>
+		    <assert:assertEquals expectedExpr="x" currentExpr="0" />
+		    <assert:assertEquals expectedExpr="y" currentExpr="0" />
+		    <assert:assertEquals expectedExpr="result" currentExpr="0" />
+		</onentry>
 	</state>
 	<state id="invokingState">
 		<!-- invoke another scxml session and give id session2 -->
@@ -38,6 +45,11 @@
 			<assign location="lastNumber" expr="_event.data.lastNumber" />
 			<assign location="invokeValideVar" expr="_event.data.invokeValideVar" />
 			<assign location="invokeInvalidVar" expr="_event.data.invokeInvalidVar" />
+			<!-- 1+2 result -->
+			<assert:assertEquals expectedExpr="2" currentExpr="lastNumber" />
+		    <assert:assertEquals expectedExpr="'changedValue'" currentExpr="invokeValideVar" />
+		    <assert:assertEquals expectedExpr="null" currentExpr="invokeInvalidVar" />
+		    <assert:assertEquals expectedExpr="3" currentExpr="result" />
 		</transition>
 	</state>
 	<final id="finalState" />

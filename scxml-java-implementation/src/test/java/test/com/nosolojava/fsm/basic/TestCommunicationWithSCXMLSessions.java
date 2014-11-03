@@ -15,12 +15,8 @@ import com.nosolojava.fsm.runtime.StateMachineEngine;
 
 public class TestCommunicationWithSCXMLSessions extends AbstractTest {
 
+	private static final String FSM_URI = "classpath:simpleSM.xml";
 	private static final String OFF_STATE = "off-state";
-
-	@Override
-	public String getFSMUri() {
-		return "classpath:simpleSM.xml";
-	}
 
 	@Test
 	public void sendEventReceiveMessageTest() throws ConfigurationException,
@@ -34,13 +30,16 @@ public class TestCommunicationWithSCXMLSessions extends AbstractTest {
 			}
 		};
 
+		Context context= startSession(FSM_URI);
 		// create the end assert
-		this.setAfterEndTask(new ContextTask() {
+		this.setAfterEndTask(new ContextTask(context) {
 
 			@Override
-			public void run(Context context, StateMachineEngine engine,boolean hasFinishedOnTime) {
-				//state machine should be in off-state and has finished in time
-				Assert.assertTrue("State machine hasn't finished in time", hasFinishedOnTime);
+			public void run(Context context, StateMachineEngine engine,
+					boolean hasFinishedOnTime) {
+				// state machine should be in off-state and has finished in time
+				Assert.assertTrue("State machine hasn't finished in time",
+						hasFinishedOnTime);
 				Assert.assertTrue("State not expected",
 						context.isActiveStateByName(OFF_STATE));
 			}
@@ -48,16 +47,10 @@ public class TestCommunicationWithSCXMLSessions extends AbstractTest {
 		});
 
 		// push a connect event
-		engine.pushEvent(ctx.getSessionId(), new BasicEvent("connect",
+		engine.pushEvent(context.getSessionId(), new BasicEvent("connect",
 				userCredentials));
-		engine.pushEvent(ctx.getSessionId(), new BasicEvent("exit"));
+		engine.pushEvent(context.getSessionId(), new BasicEvent("exit"));
 
 	}
-
-	// @Test
-	// public void communicateSBetweenSessionsTest() throws
-	// ConfigurationException, URISyntaxException, IOException,
-	// InterruptedException, SCXMLParserException {
-	// }
 
 }

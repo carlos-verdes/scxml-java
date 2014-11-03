@@ -7,6 +7,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import junit.framework.Assert;
+
 import org.junit.After;
 import org.junit.Before;
 
@@ -19,14 +21,14 @@ import com.nosolojava.fsm.runtime.StateMachineEngine;
 
 public abstract class AbstractTest {
 
+	protected final Logger logger = Logger.getLogger(this.getClass().getName());
+	
 	StateMachineEngine engine;
-	Context ctx;
 
 	private long timeoutBeforeShutdown=100;
 	private ContextTask afterEndTask=null;
 	
 	
-	public abstract String getFSMUri();
 	
 	@Before
 	public void initSMContexts() throws ConfigurationException, URISyntaxException, IOException, SCXMLParserException{
@@ -38,9 +40,12 @@ public abstract class AbstractTest {
 		
 		engine = new BasicStateMachineEngine();
 		engine.start();
-		URI fsmModelUri = new URI(getFSMUri());
-		this.ctx = engine.startFSMSession(fsmModelUri);
 		
+	}
+	
+	protected Context startSession(String uri) throws URISyntaxException, ConfigurationException, IOException, SCXMLParserException{
+		URI fsmModelUri = new URI(uri);
+		return engine.startFSMSession(fsmModelUri); 
 	}
 	
 	@After
@@ -48,13 +53,14 @@ public abstract class AbstractTest {
 		boolean shutdownInTime=engine.shutdownAndWait(getTimeout(), TimeUnit.MILLISECONDS);
 		Logger.getLogger(this.getClass().getCanonicalName()).log(Level.INFO,"Shutdown engine in time? {0}",new Object[]{shutdownInTime});
 		afterShutdown(shutdownInTime);
+		
+		Assert.assertTrue("The session hasn't finished ontime",shutdownInTime);
 	}
 
 	protected void afterShutdown(boolean shutdownInTime){
 		Logger.getLogger(this.getClass().getCanonicalName()).log(Level.INFO,"After shutdown");
 		ContextTask task;
 		if((task=getAfterEndTask())!=null){
-			task.setContext(this.ctx);
 			task.setEngine(this.engine);
 			task.setHasFinishedOnTime(shutdownInTime);
 			task.run();
@@ -63,7 +69,7 @@ public abstract class AbstractTest {
 	
 	public static abstract class ContextTask implements Runnable{
 
-		private Context context;
+		private final Context context;
 		private StateMachineEngine engine;
 		private boolean hasFinishedOnTime;
 		
@@ -76,8 +82,9 @@ public abstract class AbstractTest {
 			this.hasFinishedOnTime = hasFinishedOnTime;
 		}
 
-		public ContextTask() {
+		public ContextTask(Context context) {
 			super();
+			this.context = context;
 		}
 
 		public abstract void run (Context context, StateMachineEngine engine,boolean hasFinishedOnTime);
@@ -89,10 +96,6 @@ public abstract class AbstractTest {
 
 		public Context getContext() {
 			return context;
-		}
-
-		public void setContext(Context context) {
-			this.context = context;
 		}
 
 		public StateMachineEngine getEngine() {

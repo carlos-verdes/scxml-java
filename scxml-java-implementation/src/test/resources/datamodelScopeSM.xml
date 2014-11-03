@@ -32,7 +32,7 @@
 		    <assert:assertEquals expectedExpr="'John'" currentExpr="name" />
 		    <assert:assertEquals expectedExpr="null" currentExpr="surname" />
 		    <assert:assertEquals expectedExpr="'privateVal'" currentExpr="somePrivate" />
-		    		</onentry>
+		</onentry>
 		<transition event="next" target="end-state" />
 	</state>
 	<final id="end-state">
