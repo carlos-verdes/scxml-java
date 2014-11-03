@@ -1,6 +1,6 @@
 <scxml name="basicStates" version="0.9" android:version="2"
 	xmlns="http://www.w3.org/2005/07/scxml" xmlns:android="http://com.nosolojava.schemas.android/scxml"
-	xmlns:action="http://com.nosolojava.schemas.fsm/testAction"><!-- node-size-and-position x=0.0 y=0.0 w=290.0 h=313.0 -->
+	xmlns:action="http://nosolojava.com/customActions/barrierAction"><!-- node-size-and-position x=0.0 y=0.0 w=290.0 h=313.0 -->
 	<datamodel>
 		<data id="x" expr="1" />
 		<data id="y">init</data>

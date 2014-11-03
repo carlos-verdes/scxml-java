@@ -17,7 +17,7 @@ import com.nosolojava.fsm.runtime.executable.CustomAction;
 public class BarrierActionParser implements XppActionParser {
 	private Logger logger = Logger.getLogger(this.getClass().getName());
 
-	private static final String NS = "http://com.nosolojava.schemas.fsm/testAction";
+	private static final String NS = "http://nosolojava.com/customActions/barrierAction";
 
 	private final Map<String, CyclicBarrier> barriers = new ConcurrentHashMap<String, CyclicBarrier>();
 
@@ -64,10 +64,6 @@ public class BarrierActionParser implements XppActionParser {
 					}
 				}
 
-				@Override
-				public String getNamespace() {
-					return NS;
-				}
 			};
 		}
 		return result;

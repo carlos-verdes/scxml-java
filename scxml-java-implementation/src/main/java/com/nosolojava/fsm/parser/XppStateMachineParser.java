@@ -7,7 +7,6 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -122,14 +121,15 @@ public class XppStateMachineParser implements StateMachineParser {
 
 	private final Map<String, XppActionParser> actionParsers = new ConcurrentHashMap<String, XppActionParser>();
 
-	public XppStateMachineParser() {
-		super();
+	public XppStateMachineParser() throws ConfigurationException {
+		this(null);
 	}
 
 	public XppStateMachineParser(List<XppActionParser> actionParsers)
 			throws ConfigurationException {
+		super();
 
-		this();
+		loadDefaultActionParsers();
 
 		if (actionParsers != null) {
 			for (XppActionParser actionParser : actionParsers) {
@@ -143,6 +143,11 @@ public class XppStateMachineParser implements StateMachineParser {
 			}
 		}
 
+	}
+
+	private void loadDefaultActionParsers() {
+		this.actionParsers.put(AssertCustomActionParser.NS,
+				new AssertCustomActionParser());
 	}
 
 	@Override
@@ -528,7 +533,7 @@ public class XppStateMachineParser implements StateMachineParser {
 		} else if (SCRIPT.equals(tagName)) {
 			currentExec = parseScript(scxmlNamespace, xpp);
 		} else {
-			// if nothing else... then custom action?¿
+			// if nothing else... then custom action?ï¿½
 			String ns = xpp.getNamespace();
 			if (!actionParsers.containsKey(ns)) {
 				throw new ConfigurationException(
