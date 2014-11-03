@@ -22,7 +22,7 @@ public class RaceConditionsTest {
 	public void testIncrementalRaceCondition() throws ConfigurationException,
 			IOException, InterruptedException, SCXMLParserException {
 
-		int iterations = 1000;
+		int iterations = 100;
 		int instances = 100;
 
 		BasicStateMachineEngine.CHECK_AVAILABLE_SESSIONS_PERIOD_IN_MILLIS

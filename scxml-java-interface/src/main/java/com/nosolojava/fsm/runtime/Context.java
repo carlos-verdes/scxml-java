@@ -1,8 +1,6 @@
 package com.nosolojava.fsm.runtime;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.URL;
 import java.util.List;
 import java.util.Set;
@@ -191,7 +189,7 @@ public interface Context {
 
 	void removeActiveState(State state);
 
-	Object getDataFromURL(URL url);
+	<T> T getDataFromURL(URL url);
 
 	void addURLDataHandler(URLDataHandler var);
 

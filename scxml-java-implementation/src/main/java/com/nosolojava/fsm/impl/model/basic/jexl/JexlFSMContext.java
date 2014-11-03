@@ -44,9 +44,11 @@ import com.nosolojava.fsm.runtime.executable.externalcomm.InvokeHandler;
 public class JexlFSMContext implements Context {
 	// TODO avoid multi threading
 	public static final String SERIALIZATION_FILENAME_PATTERN = "com.nosolojava.fsm.context.{0}";
-	protected final MessageFormat serializationFilenameMF = new MessageFormat(SERIALIZATION_FILENAME_PATTERN);
+	protected final MessageFormat serializationFilenameMF = new MessageFormat(
+			SERIALIZATION_FILENAME_PATTERN);
 
-	private transient Logger logger = Logger.getLogger(this.getClass().getName());
+	private transient Logger logger = Logger.getLogger(this.getClass()
+			.getName());
 
 	protected final String sessionId;
 	protected final String parentSessionId;
@@ -73,12 +75,14 @@ public class JexlFSMContext implements Context {
 		return EVENT_NAME;
 	};
 
-	public static final MessageFormat IN_EXPRESSION = new MessageFormat("In(''{0}'')");
+	public static final MessageFormat IN_EXPRESSION = new MessageFormat(
+			"In(''{0}'')");
 
 	// private final MessageFormat ASSIGN_EXPRESSION = new
 	// MessageFormat("{0}={1}");
 
-	public JexlFSMContext(String sessionId, String parentSessionId, StateMachineModel model, StateMachineEngine engine,
+	public JexlFSMContext(String sessionId, String parentSessionId,
+			StateMachineModel model, StateMachineEngine engine,
 			Map<String, Serializable> initValues) throws ConfigurationException {
 		super();
 
@@ -103,7 +107,8 @@ public class JexlFSMContext implements Context {
 
 	}
 
-	private void loadRootState(State rootState, Map<String, Serializable> initValues) throws ConfigurationException {
+	private void loadRootState(State rootState,
+			Map<String, Serializable> initValues) throws ConfigurationException {
 
 		// load state
 		String statename = rootState.getName();
@@ -116,14 +121,14 @@ public class JexlFSMContext implements Context {
 			loadDataModelInContext(dm);
 		}
 
-		//override root state data 
+		// override root state data
 		if (initValues != null && initValues.size() > 0) {
 			for (Entry<String, Serializable> entry : initValues.entrySet()) {
 				updateDataIfExists(entry.getKey(), entry.getValue());
 			}
 		}
 
-		//load childrens
+		// load childrens
 		for (State state : rootState.getChildrens()) {
 			loadState(state);
 		}
@@ -155,7 +160,8 @@ public class JexlFSMContext implements Context {
 	private void checkRepeteadId(String id) throws ConfigurationException {
 
 		if (runtimeContext.has(id) || states.containsKey(id)) {
-			throw new ConfigurationException("Ids repeated not allowed {0} ", new Object[] { id });
+			throw new ConfigurationException("Ids repeated not allowed {0} ",
+					new Object[] { id });
 
 		}
 
@@ -180,7 +186,8 @@ public class JexlFSMContext implements Context {
 		this.dataHandlers.put(handler.getProtocol(), handler);
 	}
 
-	private void loadDataModelInContext(DataModel dataModel) throws ConfigurationException {
+	private void loadDataModelInContext(DataModel dataModel)
+			throws ConfigurationException {
 		// for each data in the model
 		for (Data data : dataModel.getDataList()) {
 			// register an immutable data in the context
@@ -220,7 +227,9 @@ public class JexlFSMContext implements Context {
 		try {
 			e = jexl.createExpression(expression);
 		} catch (NullPointerException ex) {
-			logger.log(Level.SEVERE, String.format("Error evaluating expresion %s", expression), ex);
+			logger.log(Level.SEVERE,
+					String.format("Error evaluating expresion %s", expression),
+					ex);
 			return null;
 		}
 		@SuppressWarnings("unchecked")
@@ -232,7 +241,8 @@ public class JexlFSMContext implements Context {
 	@Override
 	public boolean evaluateConditionGuardExpresion(String expression) {
 		if (logger.isLoggable(Level.FINEST)) {
-			logger.log(Level.FINEST, "evaluateConditionGuardExpresion({0})", new Object[] { expression });
+			logger.log(Level.FINEST, "evaluateConditionGuardExpresion({0})",
+					new Object[] { expression });
 			logger.log(Level.FINEST, "" + this.runtimeContext.get("breadcrumb"));
 		}
 		Expression e = jexl.createExpression(expression);
@@ -260,8 +270,10 @@ public class JexlFSMContext implements Context {
 		if (!runtimeContext.has(name)) {
 			// TODO send error.execution instead of exception when data is not
 			// found in an assignment
-			throw new RuntimeException(String.format("Updating bean not found in datamodel, bean name: %s, active states: %s"
-					,name , this.getActiveStates()));
+			throw new RuntimeException(
+					String.format(
+							"Updating bean not found in datamodel, bean name: %s, active states: %s",
+							name, this.getActiveStates()));
 		}
 	}
 
@@ -306,18 +318,43 @@ public class JexlFSMContext implements Context {
 		return isActiveStateByName(state.getName());
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
-	public Serializable getDataFromURL(URL url) {
+	public <T> T getDataFromURL(URL url) {
 		String protocol = url.getProtocol();
 
 		URLDataHandler dataHandler = this.dataHandlers.get(protocol);
+		T data = null;
 		if (dataHandler == null) {
-			logger.log(Level.SEVERE, "Protocol {0} not supported, url: {1}", new Object[] { url.getProtocol(), url });
-			throw new RuntimeException("Protocol not supported");
+			// try to get from JVM
+			try {
+				Object aux = url.getContent();
+				if (aux != null) {
+					data = (T) aux;
+				}
+			} catch (ClassCastException e) {
+				throw new RuntimeException(
+						String.format(
+								"The resource class is not compatible with expected, url: %s",
+								url), e);
 
+			} catch (IOException e) {
+				logger.log(
+						Level.SEVERE,
+						"Custom protocol {0} not supported and the url {1} can't be loaded with error {2}",
+						new Object[] { url.getProtocol(), url, e.getMessage() });
+
+				logger.log(
+						Level.SEVERE,
+						"This could happen for two reasons, you are using a custom protocol and you haven't registered the URLDataHandler or you are using a default Java URL and there has been an IOException.");
+
+				throw new RuntimeException(
+						"Custom protocol not supported and standard URL failed.",
+						e);
+			}
+		} else {
+			data = dataHandler.getData(url);
 		}
-
-		Serializable data = dataHandler.getData(url);
 
 		return data;
 	}
@@ -484,7 +521,8 @@ public class JexlFSMContext implements Context {
 	public int hashCode() {
 		final int prime = 659;
 		int result = 1;
-		result = prime * result + ((sessionId == null) ? 0 : sessionId.hashCode());
+		result = prime * result
+				+ ((sessionId == null) ? 0 : sessionId.hashCode());
 		return result;
 	}
 
@@ -517,49 +555,50 @@ public class JexlFSMContext implements Context {
 		}
 	}
 
-	//	@Override
-	//	public void persistContext(OutputStream os) throws Exception {
+	// @Override
+	// public void persistContext(OutputStream os) throws Exception {
 	//
-	//		ObjectOutputStream oos = null;
+	// ObjectOutputStream oos = null;
 	//
-	//		try {
-	//			oos = new ObjectOutputStream(os);
-	//			oos.writeObject(this);
+	// try {
+	// oos = new ObjectOutputStream(os);
+	// oos.writeObject(this);
 	//
-	//		} finally {
-	//			if (oos != null) {
-	//				oos.close();
-	//			}
-	//		}
+	// } finally {
+	// if (oos != null) {
+	// oos.close();
+	// }
+	// }
 	//
-	//	}
+	// }
 	//
-	//	@Override
-	//	public Context recoverPersistedContext(String sessionId, InputStream is, StateMachineEngine engine)
-	//			throws Exception {
-	//		ObjectInputStream ois = null;
-	//		JexlFSMContext result = null;
+	// @Override
+	// public Context recoverPersistedContext(String sessionId, InputStream is,
+	// StateMachineEngine engine)
+	// throws Exception {
+	// ObjectInputStream ois = null;
+	// JexlFSMContext result = null;
 	//
-	//		try {
-	//			ois = new ObjectInputStream(is);
+	// try {
+	// ois = new ObjectInputStream(is);
 	//
-	//			result = (JexlFSMContext) ois.readObject();
+	// result = (JexlFSMContext) ois.readObject();
 	//
-	//			result.engine = engine;
-	//			result.jexl = new JexlEngine();
-	//			Map<String, Object> funcs = new HashMap<String, Object>();
-	//			funcs.put(null, new Functions(this));
-	//			result.jexl.setFunctions(funcs);
+	// result.engine = engine;
+	// result.jexl = new JexlEngine();
+	// Map<String, Object> funcs = new HashMap<String, Object>();
+	// funcs.put(null, new Functions(this));
+	// result.jexl.setFunctions(funcs);
 	//
-	//			result.logger = Logger.getLogger(this.getClass().getName());
-	//			
-	//		} finally {
-	//			if (ois != null) {
-	//				ois.close();
-	//			}
-	//		}
+	// result.logger = Logger.getLogger(this.getClass().getName());
 	//
-	//		return result;
-	//	}
+	// } finally {
+	// if (ois != null) {
+	// ois.close();
+	// }
+	// }
+	//
+	// return result;
+	// }
 
 }
