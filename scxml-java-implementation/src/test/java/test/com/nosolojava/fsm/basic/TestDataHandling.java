@@ -11,13 +11,9 @@ import junit.framework.Assert;
 
 import org.junit.Test;
 
-import com.nosolojava.fsm.impl.model.basic.BasicStateMachineModel;
-import com.nosolojava.fsm.impl.model.basic.jexl.JexlFSMContext;
-import com.nosolojava.fsm.impl.model.basic.state.BasicState;
 import com.nosolojava.fsm.impl.runtime.basic.BasicEvent;
 import com.nosolojava.fsm.impl.runtime.basic.BasicStateMachineEngine;
 import com.nosolojava.fsm.impl.runtime.basic.BasicStateMachineFramework;
-import com.nosolojava.fsm.model.StateMachineModel;
 import com.nosolojava.fsm.model.config.exception.ConfigurationException;
 import com.nosolojava.fsm.parser.exception.SCXMLParserException;
 import com.nosolojava.fsm.runtime.Context;
