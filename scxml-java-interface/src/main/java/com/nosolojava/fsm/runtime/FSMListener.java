@@ -14,10 +14,10 @@ package com.nosolojava.fsm.runtime;
  */
 public interface FSMListener {
 
-	void onSessionStarted(ContextInstance context);
+	void onSessionStarted(ContextInstance contextInstance);
 	
-	void onSessionEnd(ContextInstance context);
+	void onSessionEnd(ContextInstance contextInstance);
 	
-	void onNewState(ContextInstance context);
+	void onNewState(ContextInstance contextInstance);
 
 }
