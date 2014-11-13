@@ -40,7 +40,7 @@ public class BasicStateMachineFramework implements StateMachineFramework {
 
 	public static final AtomicBoolean DEBUG = new AtomicBoolean(false);
 
-	//	private final Map<String, InvokeHandler> invokeHandlers = new ConcurrentHashMap<String, InvokeHandler>();
+	// private final Map<String, InvokeHandler> invokeHandlers = new ConcurrentHashMap<String, InvokeHandler>();
 
 	private final CopyOnWriteArrayList<FSMListener> listeners = new CopyOnWriteArrayList<FSMListener>();
 
@@ -79,7 +79,7 @@ public class BasicStateMachineFramework implements StateMachineFramework {
 		// create a history variable
 		context.createVarIfDontExist(HISTORY_STATES, new HashMap<String, List<State>>());
 
-		//get the model
+		// get the model
 		StateMachineModel model = context.getModel();
 
 		// validate states
@@ -96,6 +96,11 @@ public class BasicStateMachineFramework implements StateMachineFramework {
 
 		// first step
 		macroStep(context);
+		
+		//notify listeners
+		for(FSMListener listener:listeners){
+			listener.onSessionStarted(context.getLastStableConfiguration());
+		}
 
 	}
 
@@ -234,14 +239,21 @@ public class BasicStateMachineFramework implements StateMachineFramework {
 		// third manage all internal events that invoke could have raised
 		manageInternalEvents(context);
 
-		// notify  		
+		// save the current configuration
+		context.saveCurrentConfiguration();
+
+		// notify
 		for (FSMListener listener : listeners) {
-			listener.onMacroStepFinished(context);
+			listener.onNewState(context.getLastStableConfiguration());
 		}
 
 		// check if final state is reached
 		boolean finalState = isFinalStateReached(context);
 		if (finalState) {
+			//notify listeners
+			for (FSMListener listener : listeners) {
+				listener.onSessionEnd(context.getLastStableConfiguration());
+			}
 			exitInterpreter(context);
 		}
 
@@ -335,10 +347,10 @@ public class BasicStateMachineFramework implements StateMachineFramework {
 
 	private void exitInterpreter(Context context) {
 
-		//if there is a parent session
+		// if there is a parent session
 		if (context.getParentSessionId() != null) {
 
-			//create a done session event
+			// create a done session event
 			Message sessionDoneMessage = createDoneSessionMessage(context);
 
 			// push message to all io processors
@@ -348,7 +360,7 @@ public class BasicStateMachineFramework implements StateMachineFramework {
 
 		}
 
-		//end this scxml session
+		// end this scxml session
 		this.engine.endSession(context.getSessionId());
 	}
 
@@ -357,7 +369,7 @@ public class BasicStateMachineFramework implements StateMachineFramework {
 
 		SortedSet<State> finalStates = context.getActiveStates();
 
-		//there should be only one active state (a final state children of scxml)
+		// there should be only one active state (a final state children of scxml)
 		State finalState = finalStates.first();
 		DoneData doneData = finalState.getDoneData();
 		Serializable body = doneData != null ? doneData.evaluateDoneData(context) : null;
@@ -668,10 +680,10 @@ public class BasicStateMachineFramework implements StateMachineFramework {
 			}
 
 			// add datamodel to context
-			if(state.getDataModel()!=null){
+			if (state.getDataModel() != null) {
 				context.loadDataModel(state.getDataModel());
 			}
-			
+
 			// add to states to invoke
 			context.addStateToInvoke(state);
 
@@ -743,9 +755,9 @@ public class BasicStateMachineFramework implements StateMachineFramework {
 
 			cancelInvokes(context, state);
 			context.removeActiveState(state);
-			
-			//remove datamodel
-			if(state.getDataModel()!=null){
+
+			// remove datamodel
+			if (state.getDataModel() != null) {
 				context.removeDatamodel(state.getDataModel());
 			}
 
@@ -1077,5 +1089,4 @@ public class BasicStateMachineFramework implements StateMachineFramework {
 		this.logCallback = logCallback;
 	}
 
-	
 }

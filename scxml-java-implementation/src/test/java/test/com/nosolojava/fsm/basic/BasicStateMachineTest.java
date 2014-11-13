@@ -26,6 +26,7 @@ import com.nosolojava.fsm.model.config.exception.ParallelSiblingTransactionExcep
 import com.nosolojava.fsm.model.state.State;
 import com.nosolojava.fsm.parser.exception.SCXMLParserException;
 import com.nosolojava.fsm.runtime.Context;
+import com.nosolojava.fsm.runtime.ContextInstance;
 import com.nosolojava.fsm.runtime.Event;
 import com.nosolojava.fsm.runtime.EventType;
 import com.nosolojava.fsm.runtime.FSMListener;
@@ -406,7 +407,7 @@ public class BasicStateMachineTest extends AbstractTest{
 		}
 
 		@Override
-		public void onMacroStepFinished(Context context) {
+		public void onNewState(ContextInstance context) {
 
 			SortedSet<State> activeStates = context.getActiveStates();
 			String[] activeStateNames = extracActiveStateNames(activeStates);
@@ -416,7 +417,7 @@ public class BasicStateMachineTest extends AbstractTest{
 
 		}
 
-		protected BlockingQueue<String[]> getActiveStatesQueue(Context context) {
+		protected BlockingQueue<String[]> getActiveStatesQueue(ContextInstance context) {
 			BlockingQueue<String[]> activeStatesQueue;
 			if (this.mapActiveStatesQueue.containsKey(context.getSessionId())) {
 				activeStatesQueue = this.mapActiveStatesQueue.get(context
@@ -450,6 +451,18 @@ public class BasicStateMachineTest extends AbstractTest{
 			} catch (Exception e) {
 				throw new RuntimeException(e);
 			}
+		}
+
+		@Override
+		public void onSessionStarted(ContextInstance context) {
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public void onSessionEnd(ContextInstance context) {
+			// TODO Auto-generated method stub
+			
 		}
 
 	}

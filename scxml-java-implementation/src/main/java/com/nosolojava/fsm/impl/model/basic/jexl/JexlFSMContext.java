@@ -36,6 +36,7 @@ import com.nosolojava.fsm.model.datamodel.DataModel;
 import com.nosolojava.fsm.model.datamodel.URLDataHandler;
 import com.nosolojava.fsm.model.state.State;
 import com.nosolojava.fsm.runtime.Context;
+import com.nosolojava.fsm.runtime.ContextInstance;
 import com.nosolojava.fsm.runtime.Event;
 import com.nosolojava.fsm.runtime.StateMachineEngine;
 import com.nosolojava.fsm.runtime.executable.externalcomm.IOProcessor;
@@ -44,11 +45,9 @@ import com.nosolojava.fsm.runtime.executable.externalcomm.InvokeHandler;
 public class JexlFSMContext implements Context {
 	// TODO avoid multi threading
 	public static final String SERIALIZATION_FILENAME_PATTERN = "com.nosolojava.fsm.context.{0}";
-	protected final MessageFormat serializationFilenameMF = new MessageFormat(
-			SERIALIZATION_FILENAME_PATTERN);
+	protected final MessageFormat serializationFilenameMF = new MessageFormat(SERIALIZATION_FILENAME_PATTERN);
 
-	private transient Logger logger = Logger.getLogger(this.getClass()
-			.getName());
+	private transient Logger logger = Logger.getLogger(this.getClass().getName());
 
 	protected final String sessionId;
 	protected final String parentSessionId;
@@ -59,7 +58,7 @@ public class JexlFSMContext implements Context {
 
 	protected final Set<String> activeInvokeSessions = new HashSet<String>();
 
-	private final JexlContext runtimeContext;
+	private final SerializableMapContext runtimeContext;
 	private final SortedSet<State> activeStates = new ConcurrentSkipListSet<State>();
 	private final SortedSet<State> statesToInvoke = new ConcurrentSkipListSet<State>();
 
@@ -67,6 +66,7 @@ public class JexlFSMContext implements Context {
 	private final Map<String, URLDataHandler> dataHandlers = new ConcurrentHashMap<String, URLDataHandler>();
 
 	private transient JexlEngine jexl;
+	private ContextInstance lastKnownConfiguration = null;
 	private transient StateMachineEngine engine;
 
 	public static String EVENT_NAME = "_event";
@@ -75,14 +75,12 @@ public class JexlFSMContext implements Context {
 		return EVENT_NAME;
 	};
 
-	public static final MessageFormat IN_EXPRESSION = new MessageFormat(
-			"In(''{0}'')");
+	public static final MessageFormat IN_EXPRESSION = new MessageFormat("In(''{0}'')");
 
 	// private final MessageFormat ASSIGN_EXPRESSION = new
 	// MessageFormat("{0}={1}");
 
-	public JexlFSMContext(String sessionId, String parentSessionId,
-			StateMachineModel model, StateMachineEngine engine,
+	public JexlFSMContext(String sessionId, String parentSessionId, StateMachineModel model, StateMachineEngine engine,
 			Map<String, Serializable> initValues) throws ConfigurationException {
 		super();
 
@@ -107,23 +105,21 @@ public class JexlFSMContext implements Context {
 
 	}
 
-	private void loadRootState(State rootState,
-			Map<String, Serializable> initValues) throws ConfigurationException {
+	private void loadRootState(State rootState, Map<String, Serializable> initValues) throws ConfigurationException {
 
 		// load state
 		String statename = rootState.getName();
 		checkRepeteadId(statename);
 		this.states.put(statename, rootState);
 
-		//check and load datamodel
-		if(rootState.getDataModel()!=null){
-			for(Data data:rootState.getDataModel().getDataList()){
+		// check and load datamodel
+		if (rootState.getDataModel() != null) {
+			for (Data data : rootState.getDataModel().getDataList()) {
 				checkRepeteadId(data.getId());
 				registerData(data);
 			}
 		}
 
-		
 		// override root state data
 		if (initValues != null && initValues.size() > 0) {
 			for (Entry<String, Serializable> entry : initValues.entrySet()) {
@@ -144,10 +140,10 @@ public class JexlFSMContext implements Context {
 		String statename = state.getName();
 		checkRepeteadId(statename);
 		this.states.put(statename, state);
-		
-		//check datamodel
-		if(state.getDataModel()!=null){
-			for(Data data:state.getDataModel().getDataList()){
+
+		// check datamodel
+		if (state.getDataModel() != null) {
+			for (Data data : state.getDataModel().getDataList()) {
 				checkRepeteadId(data.getId());
 			}
 		}
@@ -164,8 +160,7 @@ public class JexlFSMContext implements Context {
 	private void checkRepeteadId(String id) throws ConfigurationException {
 
 		if (runtimeContext.has(id) || states.containsKey(id)) {
-			throw new ConfigurationException("Ids repeated not allowed {0} ",
-					new Object[] { id });
+			throw new ConfigurationException("Ids repeated not allowed {0} ", new Object[] { id });
 
 		}
 
@@ -191,22 +186,21 @@ public class JexlFSMContext implements Context {
 	}
 
 	@Override
-	public void loadDataModel(DataModel dataModel)
-			 {
+	public void loadDataModel(DataModel dataModel) {
 		// for each data in the model
 		for (Data data : dataModel.getDataList()) {
 			// register an immutable data in the context
 			registerData(data);
 		}
 	}
-	
+
 	@Override
-	public void removeDatamodel(DataModel dataModel){
-		
-		for(Data data:dataModel.getDataList()){
-			runtimeContext.set(data.getId(),null);
+	public void removeDatamodel(DataModel dataModel) {
+
+		for (Data data : dataModel.getDataList()) {
+			runtimeContext.set(data.getId(), null);
 		}
-		
+
 	}
 
 	private void registerData(Data data) {
@@ -239,9 +233,7 @@ public class JexlFSMContext implements Context {
 		try {
 			e = jexl.createExpression(expression);
 		} catch (NullPointerException ex) {
-			logger.log(Level.SEVERE,
-					String.format("Error evaluating expresion %s", expression),
-					ex);
+			logger.log(Level.SEVERE, String.format("Error evaluating expresion %s", expression), ex);
 			return null;
 		}
 		@SuppressWarnings("unchecked")
@@ -253,8 +245,7 @@ public class JexlFSMContext implements Context {
 	@Override
 	public boolean evaluateConditionGuardExpresion(String expression) {
 		if (logger.isLoggable(Level.FINEST)) {
-			logger.log(Level.FINEST, "evaluateConditionGuardExpresion({0})",
-					new Object[] { expression });
+			logger.log(Level.FINEST, "evaluateConditionGuardExpresion({0})", new Object[] { expression });
 			logger.log(Level.FINEST, "" + this.runtimeContext.get("breadcrumb"));
 		}
 		Expression e = jexl.createExpression(expression);
@@ -282,10 +273,9 @@ public class JexlFSMContext implements Context {
 		if (!runtimeContext.has(name)) {
 			// TODO send error.execution instead of exception when data is not
 			// found in an assignment
-			throw new RuntimeException(
-					String.format(
-							"Updating bean not found in datamodel, bean name: %s, active states: %s",
-							name, this.getActiveStates()));
+			throw new RuntimeException(String.format(
+					"Updating bean not found in datamodel, bean name: %s, active states: %s", name,
+					this.getActiveStates()));
 		}
 	}
 
@@ -345,14 +335,11 @@ public class JexlFSMContext implements Context {
 					data = (T) aux;
 				}
 			} catch (ClassCastException e) {
-				throw new RuntimeException(
-						String.format(
-								"The resource class is not compatible with expected, url: %s",
-								url), e);
+				throw new RuntimeException(String.format("The resource class is not compatible with expected, url: %s",
+						url), e);
 
 			} catch (IOException e) {
-				logger.log(
-						Level.SEVERE,
+				logger.log(Level.SEVERE,
 						"Custom protocol {0} not supported and the url {1} can't be loaded with error {2}",
 						new Object[] { url.getProtocol(), url, e.getMessage() });
 
@@ -360,9 +347,7 @@ public class JexlFSMContext implements Context {
 						Level.SEVERE,
 						"This could happen for two reasons, you are using a custom protocol and you haven't registered the URLDataHandler or you are using a default Java URL and there has been an IOException.");
 
-				throw new RuntimeException(
-						"Custom protocol not supported and standard URL failed.",
-						e);
+				throw new RuntimeException("Custom protocol not supported and standard URL failed.", e);
 			}
 		} else {
 			data = dataHandler.getData(url);
@@ -533,8 +518,7 @@ public class JexlFSMContext implements Context {
 	public int hashCode() {
 		final int prime = 659;
 		int result = 1;
-		result = prime * result
-				+ ((sessionId == null) ? 0 : sessionId.hashCode());
+		result = prime * result + ((sessionId == null) ? 0 : sessionId.hashCode());
 		return result;
 	}
 
@@ -567,50 +551,57 @@ public class JexlFSMContext implements Context {
 		}
 	}
 
-	// @Override
-	// public void persistContext(OutputStream os) throws Exception {
-	//
-	// ObjectOutputStream oos = null;
-	//
-	// try {
-	// oos = new ObjectOutputStream(os);
-	// oos.writeObject(this);
-	//
-	// } finally {
-	// if (oos != null) {
-	// oos.close();
-	// }
-	// }
-	//
-	// }
-	//
-	// @Override
-	// public Context recoverPersistedContext(String sessionId, InputStream is,
-	// StateMachineEngine engine)
-	// throws Exception {
-	// ObjectInputStream ois = null;
-	// JexlFSMContext result = null;
-	//
-	// try {
-	// ois = new ObjectInputStream(is);
-	//
-	// result = (JexlFSMContext) ois.readObject();
-	//
-	// result.engine = engine;
-	// result.jexl = new JexlEngine();
-	// Map<String, Object> funcs = new HashMap<String, Object>();
-	// funcs.put(null, new Functions(this));
-	// result.jexl.setFunctions(funcs);
-	//
-	// result.logger = Logger.getLogger(this.getClass().getName());
-	//
-	// } finally {
-	// if (ois != null) {
-	// ois.close();
-	// }
-	// }
-	//
-	// return result;
-	// }
+	@Override
+	public void saveCurrentConfiguration() {
+		this.lastKnownConfiguration = new ContextInstance() {
+
+			private JexlContext context = JexlFSMContext.this.runtimeContext.createNewFromCurrent();
+
+			@Override
+			public String getSessionId() {
+
+				return JexlFSMContext.this.sessionId;
+			}
+
+			@Override
+			public String getParentSessionId() {
+				return JexlFSMContext.this.parentSessionId;
+			}
+
+			@Override
+			public <T> T getDataByName(String name) {
+				@SuppressWarnings("unchecked")
+				T result = (T) context.get(name);
+				return result;
+			}
+
+			@Override
+			public <T> T getDataByExpression(String expression) {
+				Expression e;
+				try {
+					e = jexl.createExpression(expression);
+				} catch (NullPointerException ex) {
+					logger.log(Level.SEVERE, String.format("Error evaluating expresion %s", expression), ex);
+					return null;
+				}
+				@SuppressWarnings("unchecked")
+				T data = (T) e.evaluate(context);
+
+				return data;
+			}
+
+			@Override
+			public SortedSet<State> getActiveStates() {
+				return new TreeSet<State>(JexlFSMContext.this.activeStates);
+			}
+		};
+
+	}
+
+	@Override
+	public ContextInstance getLastStableConfiguration() {
+		return this.lastKnownConfiguration;
+
+	}
 
 }

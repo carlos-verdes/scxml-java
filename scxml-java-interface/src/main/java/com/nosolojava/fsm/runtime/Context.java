@@ -22,6 +22,20 @@ import com.nosolojava.fsm.runtime.executable.externalcomm.InvokeHandler;
  */
 public interface Context {
 
+	
+	/**
+	 * <p>The context is a very sensitive part of a FSM session. The model, active states, etc. should only be modified by the framework on micro and macro steps.
+	 * <br/>The FSM framework use this method to save the last stable configuration not exposing internal context.
+	 * <br/>This protects from outside systems to have incomplete/incongruent configuration and/or to do ilegal modifications on context.  
+	 * 
+	 */
+	void saveCurrentConfiguration();
+	/**
+	 * @return the last stable configuration, used from outside the fsm session to get access to active states, model data, etc.
+	 */
+
+	ContextInstance getLastStableConfiguration();
+	
 	/**
 	 * @return scxml session id. This is used to identify this session by event handlers.
 	 */
