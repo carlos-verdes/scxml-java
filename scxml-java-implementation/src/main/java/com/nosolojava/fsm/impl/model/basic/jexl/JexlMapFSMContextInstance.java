@@ -11,6 +11,7 @@ import org.apache.commons.jexl2.Expression;
 import org.apache.commons.jexl2.JexlEngine;
 
 import com.nosolojava.fsm.model.state.State;
+import com.nosolojava.fsm.runtime.Context;
 import com.nosolojava.fsm.runtime.SerializableContextInstance;
 
 public class JexlMapFSMContextInstance implements SerializableContextInstance {
@@ -35,6 +36,9 @@ public class JexlMapFSMContextInstance implements SerializableContextInstance {
 		for(State activeState:activeStates){
 			this.activeStates.add(activeState.getName());
 		}
+		
+		//remove current event
+		this.innerContext.removeEntry(Context.EVENT_NAME);
 		
 		jexl = new JexlEngine();
 	}

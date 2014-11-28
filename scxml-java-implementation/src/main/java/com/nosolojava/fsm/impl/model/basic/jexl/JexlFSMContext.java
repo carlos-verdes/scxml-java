@@ -68,10 +68,10 @@ public class JexlFSMContext implements Context {
 	private SerializableContextInstance lastKnownConfiguration = null;
 	private transient StateMachineEngine engine;
 
-	public static String EVENT_NAME = "_event";
+	
 
 	public static final String getEventName() {
-		return EVENT_NAME;
+		return Context.EVENT_NAME;
 	};
 
 	public static final MessageFormat IN_EXPRESSION = new MessageFormat("In(''{0}'')");

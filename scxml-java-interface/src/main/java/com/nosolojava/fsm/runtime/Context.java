@@ -22,6 +22,7 @@ import com.nosolojava.fsm.runtime.executable.externalcomm.InvokeHandler;
  */
 public interface Context {
 
+	public static String EVENT_NAME = "_event";
 	
 	/**
 	 * <p>The context is a very sensitive part of a FSM session. The model, active states, etc. should only be modified by the framework on micro and macro steps.

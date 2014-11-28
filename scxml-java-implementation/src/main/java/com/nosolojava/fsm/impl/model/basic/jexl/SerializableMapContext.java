@@ -38,6 +38,9 @@ public class SerializableMapContext implements JexlContext,
 		return this.innerMap.keySet();
 	}
 	
+	public void removeEntry(String key){
+		this.innerMap.remove(key);
+	}
 
 	@Override
 	public Object get(String name) {
