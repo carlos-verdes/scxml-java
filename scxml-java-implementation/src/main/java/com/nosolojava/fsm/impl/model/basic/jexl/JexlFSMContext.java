@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.net.URL;
 import java.text.MessageFormat;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -23,7 +22,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.apache.commons.jexl2.Expression;
-import org.apache.commons.jexl2.JexlContext;
 import org.apache.commons.jexl2.JexlEngine;
 import org.apache.commons.jexl2.Script;
 
@@ -38,6 +36,7 @@ import com.nosolojava.fsm.model.state.State;
 import com.nosolojava.fsm.runtime.Context;
 import com.nosolojava.fsm.runtime.ContextInstance;
 import com.nosolojava.fsm.runtime.Event;
+import com.nosolojava.fsm.runtime.SerializableContextInstance;
 import com.nosolojava.fsm.runtime.StateMachineEngine;
 import com.nosolojava.fsm.runtime.executable.externalcomm.IOProcessor;
 import com.nosolojava.fsm.runtime.executable.externalcomm.InvokeHandler;
@@ -66,7 +65,7 @@ public class JexlFSMContext implements Context {
 	private final Map<String, URLDataHandler> dataHandlers = new ConcurrentHashMap<String, URLDataHandler>();
 
 	private transient JexlEngine jexl;
-	private ContextInstance lastKnownConfiguration = null;
+	private SerializableContextInstance lastKnownConfiguration = null;
 	private transient StateMachineEngine engine;
 
 	public static String EVENT_NAME = "_event";
@@ -93,12 +92,8 @@ public class JexlFSMContext implements Context {
 		this.model = model;
 		this.engine = engine;
 
-		jexl = new JexlEngine();
+		jexl = new JexlFSMEngine(this);
 		runtimeContext = new SerializableMapContext();
-
-		Map<String, Object> funcs = new HashMap<String, Object>();
-		funcs.put(null, new Functions(this));
-		jexl.setFunctions(funcs);
 
 		// load datamodel and states
 		loadRootState(model.getRootState(), initValues);
@@ -553,48 +548,8 @@ public class JexlFSMContext implements Context {
 
 	@Override
 	public void saveCurrentConfiguration() {
-		this.lastKnownConfiguration = new ContextInstance() {
-
-			private JexlContext context = JexlFSMContext.this.runtimeContext.createNewFromCurrent();
-
-			@Override
-			public String getSessionId() {
-
-				return JexlFSMContext.this.sessionId;
-			}
-
-			@Override
-			public String getParentSessionId() {
-				return JexlFSMContext.this.parentSessionId;
-			}
-
-			@Override
-			public <T> T getDataByName(String name) {
-				@SuppressWarnings("unchecked")
-				T result = (T) context.get(name);
-				return result;
-			}
-
-			@Override
-			public <T> T getDataByExpression(String expression) {
-				Expression e;
-				try {
-					e = jexl.createExpression(expression);
-				} catch (NullPointerException ex) {
-					logger.log(Level.SEVERE, String.format("Error evaluating expresion %s", expression), ex);
-					return null;
-				}
-				@SuppressWarnings("unchecked")
-				T data = (T) e.evaluate(context);
-
-				return data;
-			}
-
-			@Override
-			public SortedSet<State> getActiveStates() {
-				return new TreeSet<State>(JexlFSMContext.this.activeStates);
-			}
-		};
+		this.lastKnownConfiguration = new JexlMapFSMContextInstance(sessionId, parentSessionId, runtimeContext,
+				activeStates);
 
 	}
 

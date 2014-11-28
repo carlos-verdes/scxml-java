@@ -1,4 +1,6 @@
-package com.nosolojava.fsm.runtime;
+package com.nosolojava.fsm.runtime.listener;
+
+import com.nosolojava.fsm.runtime.ContextInstance;
 
 
 /**

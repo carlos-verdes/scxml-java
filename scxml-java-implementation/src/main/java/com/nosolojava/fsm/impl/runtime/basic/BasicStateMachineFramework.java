@@ -26,13 +26,13 @@ import com.nosolojava.fsm.model.state.State;
 import com.nosolojava.fsm.model.transition.Transition;
 import com.nosolojava.fsm.runtime.Context;
 import com.nosolojava.fsm.runtime.Event;
-import com.nosolojava.fsm.runtime.FSMListener;
 import com.nosolojava.fsm.runtime.FSMLogCallback;
 import com.nosolojava.fsm.runtime.StateMachineEngine;
 import com.nosolojava.fsm.runtime.StateMachineFramework;
 import com.nosolojava.fsm.runtime.executable.Executable;
 import com.nosolojava.fsm.runtime.executable.externalcomm.IOProcessor;
 import com.nosolojava.fsm.runtime.executable.externalcomm.Message;
+import com.nosolojava.fsm.runtime.listener.FSMListener;
 
 public class BasicStateMachineFramework implements StateMachineFramework {
 

@@ -1,6 +1,7 @@
 package com.nosolojava.fsm.runtime;
 
 import com.nosolojava.fsm.model.config.exception.ConfigurationException;
+import com.nosolojava.fsm.runtime.listener.FSMListener;
 
 public interface StateMachineFramework {
 

@@ -1,9 +1,7 @@
 package com.nosolojava.fsm.runtime;
 
-import java.util.Map;
-import java.util.SortedSet;
-
-import com.nosolojava.fsm.model.state.State;
+import java.util.List;
+import java.util.Set;
 
 /**
  * <p>Context instance info sent to listeners to avoid changes on FSM session from outside. 
@@ -20,7 +18,8 @@ public interface ContextInstance {
 
 	String getSessionId();
 	String getParentSessionId();
-	SortedSet<State> getActiveStates();
+	List<String> getActiveStates();
+	Set<String> dataModelKeySet();
 	<T> T getDataByName(String name);
 	<T> T getDataByExpression(String expression);
 }
