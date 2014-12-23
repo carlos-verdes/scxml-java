@@ -13,6 +13,8 @@ public class BasicData implements Data {
 	final String expression;
 	final String value;
 
+	Object savedData = null;
+
 	private BasicData(String id, URL src, String expression, String value) {
 		super();
 		this.id = id;
@@ -35,17 +37,29 @@ public class BasicData implements Data {
 
 	@Override
 	public Object evaluateData(Context context) {
-
 		Object result = null;
-		if (src != null) {
-			result = context.getDataFromURL(src);
-		} else if (this.expression != null) {
-			result = context.getDataByExpression(this.expression);
+
+		// check if there is any saved data
+		if (this.savedData != null) {
+			result = this.savedData;
 		} else {
-			result = this.value;
+			if (src != null) {
+				result = context.getDataFromURL(src);
+			} else if (this.expression != null) {
+				result = context.getDataByExpression(this.expression);
+			} else {
+				result = this.value;
+			}
 		}
 
 		return result;
+	}
+
+	@Override
+	public void saveHistoricData(Context context) {
+
+		Object newData = context.getDataByName(this.id);
+		this.savedData = newData;
 	}
 
 	@Override

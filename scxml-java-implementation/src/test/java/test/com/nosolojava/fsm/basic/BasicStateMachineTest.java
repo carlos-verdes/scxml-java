@@ -231,9 +231,12 @@ public class BasicStateMachineTest extends AbstractTest {
 
 		assertEventActiveStates(new BasicEvent("e"), context, engine, listener, new String[] { "s", "s1", "s13" });
 		assertEventActiveStates(new BasicEvent("f"), context, engine, listener, new String[] { "s", "s1", "s13" });
+		Assert.assertEquals(null, context.getDataByName("s12Var"));
 		assertEventActiveStates(new BasicEvent("e"), context, engine, listener, new String[] { "s", "s1", "s12" });
+		Assert.assertEquals(1, context.getDataByName("s12Var"));
 		assertEventActiveStates(new BasicEvent("e"), context, engine, listener, new String[] { "t" });
 		assertEventActiveStates(new BasicEvent("e"), context, engine, listener, new String[] { "s", "s1", "s12" });
+		Assert.assertEquals(2, context.getDataByName("s12Var"));
 
 	}
 

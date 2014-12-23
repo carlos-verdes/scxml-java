@@ -19,6 +19,7 @@ import com.nosolojava.fsm.impl.runtime.executable.externalcomm.basic.BasicMessag
 import com.nosolojava.fsm.model.StateMachineModel;
 import com.nosolojava.fsm.model.config.exception.ConfigurationException;
 import com.nosolojava.fsm.model.config.exception.ParallelSiblingTransactionException;
+import com.nosolojava.fsm.model.datamodel.Data;
 import com.nosolojava.fsm.model.externalcomm.Invoke;
 import com.nosolojava.fsm.model.state.DoneData;
 import com.nosolojava.fsm.model.state.HistoryTypes;
@@ -776,9 +777,9 @@ public class BasicStateMachineFramework implements StateMachineFramework {
 
 				// retrieve the history active states
 				if (HistoryTypes.SHALLOW.equals(historyState.getHistoryType())) {
-					historyActiveStates = extractShallowHistory(activeStates, state);
+					historyActiveStates = extractShallowHistory(context, activeStates, state);
 				} else {
-					historyActiveStates = extractDeepHistory(activeStates, state);
+					historyActiveStates = extractDeepHistory(context, activeStates, state);
 				}
 
 				if (DEBUG.get()) {
@@ -797,11 +798,12 @@ public class BasicStateMachineFramework implements StateMachineFramework {
 		return historyStatesMap;
 	}
 
-	private SortedSet<State> extractDeepHistory(SortedSet<State> activeStates, State state) {
+	private SortedSet<State> extractDeepHistory(Context context, SortedSet<State> activeStates, State state) {
 		SortedSet<State> historyActiveStates = new TreeSet<State>();
 
 		for (State active : activeStates) {
 			if (active.isDescendant(state) && !active.hasChildrens()) {
+				saveHistoricStateDatamodel(context, active);
 				historyActiveStates.add(active);
 			}
 		}
@@ -809,10 +811,11 @@ public class BasicStateMachineFramework implements StateMachineFramework {
 		return historyActiveStates;
 	}
 
-	private SortedSet<State> extractShallowHistory(SortedSet<State> activeStates, State state) {
+	private SortedSet<State> extractShallowHistory(Context context, SortedSet<State> activeStates, State state) {
 		SortedSet<State> historyActiveStates = new TreeSet<State>();
 		for (State children : state.getChildrens()) {
 			if (activeStates.contains(children)) {
+				saveHistoricStateDatamodel(context, children);
 				historyActiveStates.add(children);
 				break;
 			}
@@ -820,6 +823,16 @@ public class BasicStateMachineFramework implements StateMachineFramework {
 
 		return historyActiveStates;
 	}
+
+	protected void saveHistoricStateDatamodel(Context context, State active) {
+		// update datamodel
+		if(active.getDataModel()!=null){
+			for(Data data:active.getDataModel().getDataList()){
+				data.saveHistoricData(context);
+			}
+		}
+	}
+
 
 	private void logFine(String text) {
 		logCallback.logDebug(text);

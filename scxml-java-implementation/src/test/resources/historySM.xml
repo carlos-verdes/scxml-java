@@ -37,6 +37,12 @@
                  <transition event="e" target="hs1" />
              </state>
              <state id="s12">
+                 <datamodel>
+                     <data id="s12Var" expr="0" />
+                 </datamodel>
+                 <onentry>
+                     <assign location="s12Var" expr="s12Var+1" />
+                 </onentry>
                  <transition event="e" target="t"></transition>
              </state>
              <state id="s13">

@@ -14,5 +14,11 @@ public interface Data extends Serializable {
 	String getExpression();
 
 	Object evaluateData(Context context);
-
+	
+	/**
+	 * Use to update datamodel with context current config when saving historic states.
+	 * @param context
+	 */
+	void saveHistoricData(Context context);
+	
 }
