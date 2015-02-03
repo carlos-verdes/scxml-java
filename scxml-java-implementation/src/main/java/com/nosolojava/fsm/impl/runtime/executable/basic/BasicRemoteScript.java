@@ -24,7 +24,7 @@ public class BasicRemoteScript implements Script {
 			String content = (String) codeContentURL.getContent();
 			context.executeScript(content);
 		} catch (IOException e) {
-			context.getScxmlIOProcessor().sendMessage(BasicMessage.createSimpleSCXMLMessage("error.executable.remoteScript", context));
+			context.getScxmlIOProcessor().sendMessageFromFSM(BasicMessage.createSimpleSCXMLMessage("error.executable.remoteScript", context));
 		}
 	}
 

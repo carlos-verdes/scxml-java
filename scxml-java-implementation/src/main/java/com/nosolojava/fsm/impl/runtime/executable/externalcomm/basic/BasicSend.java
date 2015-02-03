@@ -233,7 +233,7 @@ public class BasicSend implements Send {
 		message = this.createMessage(context);
 
 		IOProcessor ioProcessor = context.searchIOProcessor(this.getType(context));
-		ioProcessor.sendMessage(message);
+		ioProcessor.sendMessageFromFSM(message);
 
 	}
 

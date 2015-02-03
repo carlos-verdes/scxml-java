@@ -85,7 +85,7 @@ public class ScxmlInvokeHandler extends AbstractBasicInvokeHandler {
 
 	@Override
 	public void sendMessageToService(Message message, Context context) {
-		context.getScxmlIOProcessor().sendMessage(message);
+		context.getScxmlIOProcessor().sendMessageFromFSM(message);
 	}
 
 }

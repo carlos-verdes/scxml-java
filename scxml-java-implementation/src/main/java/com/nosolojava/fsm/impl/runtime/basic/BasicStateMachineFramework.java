@@ -356,7 +356,7 @@ public class BasicStateMachineFramework implements StateMachineFramework {
 
 			// push message to all io processors
 			for (IOProcessor ioProcessor : context.getIOProcessors()) {
-				ioProcessor.sendMessage(sessionDoneMessage);
+				ioProcessor.sendMessageFromFSM(sessionDoneMessage);
 			}
 
 		}

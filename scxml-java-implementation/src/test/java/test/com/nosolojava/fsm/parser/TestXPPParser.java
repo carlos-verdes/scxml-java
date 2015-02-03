@@ -161,7 +161,7 @@ public class TestXPPParser {
 
 	private void pushEvent(Context ctx, String eventName) {
 		Message message = BasicMessage.createSimpleSCXMLMessage(eventName, ctx);
-		ctx.getScxmlIOProcessor().sendMessage(message);
+		ctx.getScxmlIOProcessor().sendMessageFromFSM(message);
 	}
 
 	private String getY(Context ctx) {

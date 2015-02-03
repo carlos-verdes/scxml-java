@@ -58,7 +58,7 @@ public class ConsoleInvokeHandler extends AbstractBasicInvokeHandler {
 					Message message = BasicMessage.createSimpleSCXMLMessage(result, context.getParentSessionId(),
 							context);
 					IOProcessor ioProcessor = context.searchIOProcessor(ScxmlIOProcessor.NAME);
-					ioProcessor.sendMessage(message);
+					ioProcessor.sendMessageFromFSM(message);
 
 				}
 
@@ -97,7 +97,7 @@ public class ConsoleInvokeHandler extends AbstractBasicInvokeHandler {
 	public void sendMessageToService(Message message, Context context) {
 
 		IOProcessor ioProcessor = context.searchIOProcessor(ConsoleIOProcessor.NAME);
-		ioProcessor.sendMessage(message);
+		ioProcessor.sendMessageFromFSM(message);
 
 	}
 

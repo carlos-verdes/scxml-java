@@ -82,7 +82,7 @@ public class ScxmlIOProcessor implements IOProcessor {
 	}
 
 	@Override
-	public void sendMessage(Message message) {
+	public void sendMessageFromFSM(Message message) {
 		// TODO manage errors when resolving an event in ScxmlIOProcessor
 
 		Context originContext = getSessionFromURI(message.getSource());
@@ -247,10 +247,18 @@ public class ScxmlIOProcessor implements IOProcessor {
 		return event;
 	}
 
+	@Override
+	public void sendEventToFSM(String sessionId, Event event) {
+		if(this.engine.isSessionActive(sessionId)){
+			this.engine.pushEvent(sessionId, event);
+		}
+		
+	}
+	
 	protected void pushEventToFSM(final Event event, final Context context) {
 
 		String sessionId = context.getSessionId();
-		this.engine.pushEvent(sessionId, event);
+		sendEventToFSM(sessionId, event);
 	}
 
 	private Context getSessionFromURI(URI target) {

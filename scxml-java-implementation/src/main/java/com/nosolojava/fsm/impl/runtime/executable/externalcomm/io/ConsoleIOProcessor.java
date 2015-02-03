@@ -2,6 +2,7 @@ package com.nosolojava.fsm.impl.runtime.executable.externalcomm.io;
 
 import java.net.URI;
 
+import com.nosolojava.fsm.runtime.Event;
 import com.nosolojava.fsm.runtime.StateMachineEngine;
 import com.nosolojava.fsm.runtime.executable.externalcomm.IOProcessor;
 import com.nosolojava.fsm.runtime.executable.externalcomm.Message;
@@ -28,7 +29,7 @@ public class ConsoleIOProcessor implements IOProcessor {
 	}
 
 	@Override
-	public void sendMessage(Message message) {
+	public void sendMessageFromFSM(Message message) {
 		if (message != null && message.getBody() != null
 				&& String.class.isAssignableFrom(message.getBody().getClass())) {
 			String messageText = (String) message.getBody();
@@ -43,6 +44,14 @@ public class ConsoleIOProcessor implements IOProcessor {
 	@Override
 	public void setEngine(StateMachineEngine engine) {
 		this.engine = engine;
+	}
+
+	@Override
+	public void sendEventToFSM(String sessionId, Event event) {
+		if(this.engine.isSessionActive(sessionId)){
+			this.engine.pushEvent(sessionId, event);
+		}
+		
 	}
 
 }
