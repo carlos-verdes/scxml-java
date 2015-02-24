@@ -73,7 +73,7 @@ public class TestXPPParser {
 		Assert.assertEquals(CONNECTED_STATE, transition.getTargetState(ctx).getName());
 		Assert.assertFalse(transition.isInternal());
 
-		engine.shutdownAndWait(50, TimeUnit.MILLISECONDS);
+		engine.shutdownAndWait(500, TimeUnit.MILLISECONDS);
 	}
 
 	@Test

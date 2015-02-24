@@ -1,23 +1,11 @@
 package test.com.nosolojava.fsm.basic;
 
-import java.io.IOException;
-import java.net.URI;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.concurrent.TimeUnit;
-
-import org.junit.Assert;
 import org.junit.Test;
-
-import com.nosolojava.fsm.impl.runtime.basic.BasicEvent;
-import com.nosolojava.fsm.impl.runtime.basic.BasicStateMachineEngine;
-import com.nosolojava.fsm.model.config.exception.ConfigurationException;
-import com.nosolojava.fsm.parser.exception.SCXMLParserException;
-import com.nosolojava.fsm.runtime.Context;
-import com.nosolojava.fsm.runtime.StateMachineEngine;
 
 public class RaceConditionsTest {
 
+	@Test public void doNothing(){}
+	
 //	@Test
 //	public void testIncrementalRaceCondition() throws ConfigurationException,
 //			IOException, InterruptedException, SCXMLParserException {
