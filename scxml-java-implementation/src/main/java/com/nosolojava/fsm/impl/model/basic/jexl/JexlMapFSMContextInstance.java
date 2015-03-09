@@ -25,21 +25,22 @@ public class JexlMapFSMContextInstance implements SerializableContextInstance {
 	private final SerializableMapContext innerContext;
 	private transient JexlEngine jexl;
 
-	public JexlMapFSMContextInstance(String sessionId,String parentSessionId,SerializableMapContext innerContext,SortedSet<State> activeStates) {
+	public JexlMapFSMContextInstance(String sessionId, String parentSessionId, SerializableMapContext innerContext,
+			SortedSet<State> activeStates) {
 		super();
-		
-		this.sessionId=sessionId;
-		this.parentSessionId= parentSessionId;
+
+		this.sessionId = sessionId;
+		this.parentSessionId = parentSessionId;
 		this.innerContext = innerContext;
-		
-		this.activeStates= new ArrayList<String>(activeStates!=null?activeStates.size():0);
-		for(State activeState:activeStates){
+
+		this.activeStates = new ArrayList<String>(activeStates != null ? activeStates.size() : 0);
+		for (State activeState : activeStates) {
 			this.activeStates.add(activeState.getName());
 		}
-		
-		//remove current event
+
+		// remove current event
 		this.innerContext.removeEntry(Context.EVENT_NAME);
-		
+
 		jexl = new JexlEngine();
 	}
 
@@ -47,8 +48,23 @@ public class JexlMapFSMContextInstance implements SerializableContextInstance {
 		if (jexl == null) {
 			jexl = new JexlEngine();
 		}
-		
+
 		return this.jexl;
+	}
+
+	@Override
+	public boolean isStateActive(String... stateNames) {
+
+		boolean result = false;
+
+		for (String stateName : stateNames) {
+			if (this.activeStates.contains(stateName)) {
+				result = true;
+				break;
+			}
+		}
+
+		return result;
 	}
 
 	@Override

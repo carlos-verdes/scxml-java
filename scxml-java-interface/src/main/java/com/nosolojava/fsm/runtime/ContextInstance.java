@@ -19,6 +19,7 @@ public interface ContextInstance {
 	String getSessionId();
 	String getParentSessionId();
 	List<String> getActiveStates();
+	boolean isStateActive(String... stateName);
 	Set<String> dataModelKeySet();
 	<T> T getDataByName(String name);
 	<T> T getDataByExpression(String expression);
