@@ -53,7 +53,7 @@ Maven dependency:
 #How to start/stop a session
 
 You application could have different FSM sessions depending on how many behaviors you want to model. Each session will have his associated SCXML resource describing the different states, data model, actions and transitions. 
-We call "the context" to the current configuration of a session in a concrete moment (which states are active, what information is loaded in the model, etc.). There is an StateMachineEngine which is the responsible to parse the SCXML resource and start a new session (creating a Context instance). One SCXML session can send messages to another SCXML session or even start it if needed (invoking a new SCXML session). This is handful when you have a FSM utility that you want to use in different applications. An SCXML session ends when all the active states are a special "final" state.
+It's called "the context" to the current configuration of a session in a concrete moment (which states are active, what information is loaded in the model, etc.). There is an StateMachineEngine which is the responsible to parse the SCXML resource and start a new session (creating a Context instance). One SCXML session can send messages to another SCXML session or even start it if needed (invoking a new SCXML session). This is handful when you have a FSM utility that you want to use in different applications. An SCXML session ends when all the active states are a special "final" state.
  
 You  can create an SCXML resource like the next example and save it in the classpath, on your server, or any valid URL location.
 
@@ -141,7 +141,7 @@ When you finish you can stop the engine waiting the current sessions to finish o
 #How to communicate with a session
 
 
-The communication between SCXML sessions with other sessions/applications is done with events (inputs) and messages (outputs), and are performed by I/O event processors. Each I/O processor is able to handle a diferent type of events/messages and transport mechanisms (for example the scxml-android module has I/O processors for intent events).
+The communication between SCXML sessions and other sessions/applications is done with events (inputs) and messages (outputs), and are performed by I/O event processors. Each I/O processor is able to handle a diferent type of events/messages and transport mechanisms (for example the scxml-android module has I/O processors for intent events).
 
 ##Send an event to a session
 To send events to a session from your IO proccesor you could offer a message to a context or send to the engine with the session id.
