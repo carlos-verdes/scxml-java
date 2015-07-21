@@ -265,3 +265,10 @@ Example of a calculator:
 
 It's important to note that the data has a scope, so if the datamodel is declared inside a concrete state this datamodel will be available only when this state is active.
 
+
+# Other features
+It's also available:
+- parallel states 
+- history states
+- custom actions
+- custom IO processors
