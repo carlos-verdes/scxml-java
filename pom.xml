@@ -141,6 +141,18 @@
 					</execution>
 				</executions>
 			</plugin>
+			<!-- sonatype nexus -->
+			<plugin>
+				<groupId>org.sonatype.plugins</groupId>
+				<artifactId>nexus-staging-maven-plugin</artifactId>
+				<version>1.6.3</version>
+				<extensions>true</extensions>
+				<configuration>
+					<serverId>ossrh</serverId>
+					<nexusUrl>https://oss.sonatype.org/</nexusUrl>
+					<autoReleaseAfterClose>true</autoReleaseAfterClose>
+				</configuration>
+			</plugin>
 		</plugins>
 	</build>
 	<dependencyManagement>
@@ -178,14 +190,16 @@
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
+	<!-- distribution -->
 	<distributionManagement>
-		<!-- use the following if you're NOT using a snapshot version. -->
-		<!-- <repository> <id>internal</id> <name>Archiva Managed Internal Repository</name> 
-			<url>http://20.34.10.160:8080/archiva/repository/internal</url> </repository> -->
-		<!-- use the following if you ARE using a snapshot version. -->
-		<!-- <snapshotRepository> <id>snapshots</id> <name>Archiva Managed Snapshot 
-			Repository</name> <url>http://20.34.10.160:8080/archiva/repository/snapshots</url> 
-			</snapshotRepository> -->
+		<snapshotRepository>
+			<id>ossrh</id>
+			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
+		</snapshotRepository>
+		<repository>
+			<id>ossrh</id>
+			<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+		</repository>
 	</distributionManagement>
 
 	<modules>
