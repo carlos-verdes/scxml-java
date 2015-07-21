@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.nosolojava.fsm</groupId>
 	<artifactId>scxml-java</artifactId>
-	<version>1.0.1</version>
+	<version>1.0.2-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<name>SCXML Java implementation project</name>
 	<description>SCXML Java implementation that can be used in Android.</description>
