@@ -229,4 +229,39 @@ Finally the called session could answer to the parent session with the special i
 </transition>
 ```
 
+## Data manipulation
+
+The datamodel of a state machine MUST be modified only by the engine in the onentry/onexit and transitions execution fragments. Usually the ```<assign />``` element is used.
+
+Inside a transition the _event.data give access to the event payload.
+
+All the expressions are evaluated with JEXL so you can do things like concat/trim/... strings, math operations, etc.
+https://commons.apache.org/proper/commons-jexl/reference/syntax.html
+
+
+Example of a calculator:
+```xml
+<scxml>
+  	<datamodel>
+		<data id="result" />
+		<data id="lastNumber" />
+		<data id="invokeValideVar" expr="'initialValue'" />
+	</datamodel>
+	<state id="calculatorInitState">
+		<datamodel>
+			<data id="invokeInvalidVar" expr="'initialValue'" />
+		</datamodel>
+		<onentry>
+			<assign location="result" expr="0" />
+		</onentry>
+		<transition event="add" type="internal">
+			<assign location="result" expr="_event.data+result" />
+			<assign location="lastNumber" expr="_event.data" />
+			<send target="#_parent" event="result" namelist="result" />
+		</transition>
+	...
+</scxml>
+```
+
+
 
