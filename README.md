@@ -53,7 +53,7 @@ Maven dependency:
 #How to start/stop a session
 
 You application could have different FSM sessions depending on how many behaviors you want to model. Each session will have his associated SCXML resource describing the different states, data model, actions and transitions. 
-We call "the context" to the current configuration of a session in a concrete moment (which states are active, what information is loaded in the model, etc.). There is an StateMachineEngine which is the responsible to parse the SCXML resource and start a new session (creating a Context instance). One SCXML session can send messages to another SCXML session or even start it if needed (invoking a new SCXML session). This is handful when you have a FSM utility that you want to use in different applications. An SCXML session ends when all the active states are a special "final" state.
+It's called "the context" to the current configuration of a session in a concrete moment (which states are active, what information is loaded in the model, etc.). There is an StateMachineEngine which is the responsible to parse the SCXML resource and start a new session (creating a Context instance). One SCXML session can send messages to another SCXML session or even start it if needed (invoking a new SCXML session). This is handful when you have a FSM utility that you want to use in different applications. An SCXML session ends when all the active states are a special "final" state.
  
 You  can create an SCXML resource like the next example and save it in the classpath, on your server, or any valid URL location.
 
@@ -141,7 +141,7 @@ When you finish you can stop the engine waiting the current sessions to finish o
 #How to communicate with a session
 
 
-The communication between SCXML sessions with other sessions/applications is done with events (inputs) and messages (outputs), and are performed by I/O event processors. Each I/O processor is able to handle a diferent type of events/messages and transport mechanisms (for example the scxml-android module has I/O processors for intent events).
+The communication between SCXML sessions and other sessions/applications is done with events (inputs) and messages (outputs), and are performed by I/O event processors. Each I/O processor is able to handle a diferent type of events/messages and transport mechanisms (for example the scxml-android module has I/O processors for intent events).
 
 ##Send an event to a session
 To send events to a session from your IO proccesor you could offer a message to a context or send to the engine with the session id.
@@ -229,4 +229,46 @@ Finally the called session could answer to the parent session with the special i
 </transition>
 ```
 
+## Data manipulation
 
+The datamodel of a state machine MUST be modified only by the engine in the onentry/onexit and transitions execution fragments. Usually the ```<assign />``` element is used.
+
+Inside a transition the _event.data give access to the event payload.
+
+All the expressions are evaluated with JEXL so you can do things like concat/trim/... strings, math operations, etc.
+https://commons.apache.org/proper/commons-jexl/reference/syntax.html
+
+
+Example of a calculator:
+```xml
+<scxml>
+  	<datamodel>
+		<data id="result" />
+		<data id="lastNumber" />
+		<data id="invokeValideVar" expr="'initialValue'" />
+	</datamodel>
+	<state id="calculatorInitState">
+		<datamodel>
+			<data id="invokeInvalidVar" expr="'initialValue'" />
+		</datamodel>
+		<onentry>
+			<assign location="result" expr="0" />
+		</onentry>
+		<transition event="add" type="internal">
+			<assign location="result" expr="_event.data+result" />
+			<assign location="lastNumber" expr="_event.data" />
+			<send target="#_parent" event="result" namelist="result" />
+		</transition>
+	...
+</scxml>
+```
+
+It's important to note that the data has a scope, so if the datamodel is declared inside a concrete state this datamodel will be available only when this state is active.
+
+
+# Other features
+It's also available:
+- parallel states 
+- history states
+- custom actions
+- custom IO processors
