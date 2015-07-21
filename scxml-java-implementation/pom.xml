@@ -4,7 +4,7 @@
 	<parent>
 		<artifactId>scxml-java</artifactId>
 		<groupId>com.nosolojava.fsm</groupId>
-		<version>1.0.1-SNAPSHOT</version>
+		<version>1.0.1</version>
 	</parent>
 	<artifactId>scxml-java-implementation</artifactId>
 	<dependencies>
