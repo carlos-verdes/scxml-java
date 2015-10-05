@@ -29,7 +29,7 @@ https://github.com/nosolojava/scxml-android.git
 
 #How to include in your project
 
-This module will be in a public repository, right now you should download and do a clean-install with Maven:
+Source code:
 
 
 	git clone https://github.com/nosolojava/scxml-java.git
@@ -44,7 +44,7 @@ Maven dependency:
 	<dependency>
 		<artifactId>scxml-java-implementation</artifactId>
 		<groupId>com.nosolojava.fsm</groupId>
-		<version>1.0.1-SNAPSHOT</version>
+		<version>1.0.1</version>
 	</dependency>
 	
 ```
