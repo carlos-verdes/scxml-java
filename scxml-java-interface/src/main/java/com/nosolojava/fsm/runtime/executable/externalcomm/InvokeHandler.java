@@ -10,7 +10,7 @@ public interface InvokeHandler extends Serializable {
 	/**
 	 * This method is called when a state with an invoke is reached (onentry).
 	 * 
-	 * @param input invoke info like sessión id, source or content input data and additional arguments.
+	 * @param input invoke info like session id, source or content input data and additional arguments.
 	 * @param context fsm current configuration
 	 */
 	void invokeService(InvokeInfo input, Context context);
@@ -19,8 +19,7 @@ public interface InvokeHandler extends Serializable {
 	/**
 	 * If the invoke has the attribute auto forward, then the FSM will send the external events to the invoke.
 	 * 
-	 * @param invokeId
-	 * @param event
+	 * @param message
 	 */
 	void sendMessageToService(Message message);
 	
