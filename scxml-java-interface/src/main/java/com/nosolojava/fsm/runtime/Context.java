@@ -36,7 +36,9 @@ public interface Context {
 	 */
 
 	ContextInstance getLastStableConfiguration();
-	
+
+	boolean hasStateChangedGetAndSet(boolean newValue);
+
 	/**
 	 * @return scxml session id. This is used to identify this session by event handlers.
 	 */
