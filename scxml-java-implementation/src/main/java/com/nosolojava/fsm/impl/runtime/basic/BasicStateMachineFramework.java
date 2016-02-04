@@ -389,9 +389,6 @@ public class BasicStateMachineFramework implements StateMachineFramework {
             logFine("++++++++++++++++++++++++++++++++++++");
         }
 
-        //notify state has changed
-        context.hasStateChangedGetAndSet(true);
-
         exitStates(context, enabledTransitions);
         executeTransitionContent(context, enabledTransitions);
         enterStates(context, enabledTransitions);
@@ -674,6 +671,10 @@ public class BasicStateMachineFramework implements StateMachineFramework {
         // add states to enter
         addStatesToEnter(context, enabledTransitions, statesToEnter, statesForDefaultEntry);
 
+        //notify if state has changed
+        context.hasStateChangedGetAndSet(!statesToEnter.isEmpty());
+
+
         if (DEBUG.get()) {
             logFine("Entering states " + statesToEnter);
         }
@@ -737,6 +738,10 @@ public class BasicStateMachineFramework implements StateMachineFramework {
         SortedSet<State> activeStates = context.getActiveStates();
         // get states to exit
         SortedSet<State> statesToExit = getStatesToExit(context, enabledTransitions);
+
+        //notify if state has changed
+        context.hasStateChangedGetAndSet(!statesToExit.isEmpty());
+
         if (DEBUG.get()) {
             logFine("Exiting states: " + statesToExit);
         }
