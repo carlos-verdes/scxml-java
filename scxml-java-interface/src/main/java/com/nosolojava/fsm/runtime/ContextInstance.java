@@ -10,7 +10,6 @@ import java.util.Set;
  * <li>session id
  * <li>parent session id
  * <li>active states
- * <li>complete key-value model
  * @author cverdes
  *
  */
@@ -20,7 +19,4 @@ public interface ContextInstance {
 	String getParentSessionId();
 	List<String> getActiveStates();
 	boolean isStateActive(String... stateName);
-	Set<String> dataModelKeySet();
-	<T> T getDataByName(String name);
-	<T> T getDataByExpression(String expression);
 }
