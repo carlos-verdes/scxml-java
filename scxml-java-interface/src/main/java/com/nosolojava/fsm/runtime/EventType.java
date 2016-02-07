@@ -2,11 +2,8 @@ package com.nosolojava.fsm.runtime;
 
 public enum EventType {
 
-	PLATFORM("platform"),INTERNAL("internal"),EXTERNAL("external");
+	PLATFORM("PLATFORM"),INTERNAL("INTERNAL"),EXTERNAL("EXTERNAL");
 	
-	
-	
-
 	private EventType(String type) {
 		this.type = type;
 	}

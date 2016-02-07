@@ -70,6 +70,8 @@ public class BasicEvent implements Event, Externalizable {
 
     }
 
+    public BasicEvent(){this(null,null);}
+
     public BasicEvent(String name) {
         this(name, null);
     }
