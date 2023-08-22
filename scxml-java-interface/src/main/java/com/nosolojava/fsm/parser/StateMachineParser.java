@@ -1,6 +1,7 @@
 package com.nosolojava.fsm.parser;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 
 import com.nosolojava.fsm.model.StateMachineModel;
@@ -18,5 +19,7 @@ public interface StateMachineParser {
 	boolean validURI(URI source);
 
 	StateMachineModel parseScxml(URI source) throws ConfigurationException, IOException,SCXMLParserException;
-	
+
+	StateMachineModel parseScxml(InputStream source) throws ConfigurationException, IOException,SCXMLParserException;
+
 }

@@ -1,6 +1,7 @@
 package com.nosolojava.fsm.runtime;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Serializable;
 import java.net.URI;
 import java.util.Collection;
@@ -54,7 +55,7 @@ public interface StateMachineEngine {
 	 *            scxml session id
 	 * @param parentSessionId
 	 *            parent scxml session id (null could be passed if this doesn't apply
-	 * @param fsmModelURI
+	 * @param fsmModelUri
 	 *            FSM model source
 	 * @param initValues
 	 *            invoke params used to initialize the called session
@@ -64,6 +65,26 @@ public interface StateMachineEngine {
 	 */
 
 	Context startFSMSession(String sessionId, String parentSessionId, URI fsmModelUri,
+			Map<String, Serializable> initValues) throws ConfigurationException, IOException,SCXMLParserException;
+
+	/**
+	 * Used to start a SCXML session when the session id is known. For example when an {@link Invoke} of type "scxml" is
+	 * called.
+	 *
+	 * @param sessionId
+	 *            scxml session id
+	 * @param parentSessionId
+	 *            parent scxml session id (null could be passed if this doesn't apply
+	 * @param fsmModelFromStream
+	 *            FSM model source passed as inputstream
+	 * @param initValues
+	 *            invoke params used to initialize the called session
+	 * @return the current FSM config (after initialization)
+	 * @throws ConfigurationException
+	 * @throws IOException
+	 */
+
+	Context startFSMSession(String sessionId, String parentSessionId, InputStream fsmModelFromStream,
 			Map<String, Serializable> initValues) throws ConfigurationException, IOException,SCXMLParserException;
 
 	/**
