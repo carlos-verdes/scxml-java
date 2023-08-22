@@ -1,9 +1,12 @@
 package test.com.nosolojava.fsm.parser;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -156,6 +159,42 @@ public class TestXPPParser {
 
 		// wait end
 		barrierAction.blockUntilAction("end");
+		engine.shutdownAndWait(500, TimeUnit.MILLISECONDS);
+	}
+
+	@Test(timeout=1000)
+	public void parseSimpleXMLFromStream() throws ConfigurationException, IOException,
+			InterruptedException, URISyntaxException, SCXMLParserException {
+
+		// set DEBUG true|false
+		BasicStateMachineFramework.DEBUG.set(true);
+		// init engine
+		StateMachineEngine engine = new BasicStateMachineEngine();
+		engine.start();
+
+		//start a state machine session
+		Context ctx = engine.startFSMSession(null, null, Files.newInputStream(new File("src/test/resources/simpleSM.xml").toPath()), null);
+
+		StateMachineModel smm = ctx.getModel();
+
+		// check initial
+		InitialState initial = smm.getRootState().getInitialState();
+		Transition initialTransition = initial.getInitialTransition();
+		Assert.assertNotNull(initialTransition);
+		Assert.assertEquals(smm.getRootState(), initialTransition.getSourceState(ctx));
+		Assert.assertEquals(MAIN_STATE, initialTransition.getTargetState(ctx).getName());
+
+		State state = smm.getRootState().getChildrens().get(0);
+		Assert.assertEquals(MAIN_STATE, state.getName());
+
+		state=state.getInitialState().getInitialTransition().getTargetState(ctx);
+		Assert.assertEquals(DISCONNECTED_STATE, state.getName());
+		Transition transition = state.getTransitions().get(0);
+		Assert.assertNotNull(transition);
+		Assert.assertEquals(state, transition.getSourceState(ctx));
+		Assert.assertEquals(CONNECTED_STATE, transition.getTargetState(ctx).getName());
+		Assert.assertFalse(transition.isInternal());
+
 		engine.shutdownAndWait(500, TimeUnit.MILLISECONDS);
 	}
 
